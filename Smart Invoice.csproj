@@ -17,22 +17,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="4.2.2" />
+    <PackageReference Include="Microsoft.Owin.Security.OAuth" Version="4.2.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.13" />
+    <PackageReference Include="RestSharp" Version="110.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Accountant\Controllers\" />
     <Folder Include="Areas\Accountant\Data\" />
     <Folder Include="Areas\Accountant\Models\" />
-    <Folder Include="Areas\Accountant\Views\" />
-    <Folder Include="Areas\Admin\Controllers\" />
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="Areas\Admin\Views\" />
-    <Folder Include="Areas\SuperAdmin\Controllers\" />
-    <Folder Include="Areas\SuperAdmin\Data\" />
-    <Folder Include="Areas\SuperAdmin\Models\" />
-    <Folder Include="Areas\SuperAdmin\Views\" />
   </ItemGroup>
 
 </Project>
