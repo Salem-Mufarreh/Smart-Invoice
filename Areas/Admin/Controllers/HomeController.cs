@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using Smart_Invoice.Utility;
 using System.Text.Json;
@@ -6,6 +7,7 @@ using System.Text.Json;
 namespace Smart_Invoice.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
     public class HomeController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;

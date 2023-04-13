@@ -14,6 +14,8 @@ namespace Smart_Invoice.Models
         [Required]
         [StringLength(50)]
         public int InvoiceNumber { get; set; }
+  
+       
         [Required]
         public DateTime InvoiceDate { get; set; }
         [Required]
@@ -23,7 +25,6 @@ namespace Smart_Invoice.Models
         [Required]
         [StringLength(50)]
         public string CurrencyCode { get; set; }
- 
         [Required]
         public string PaymentStatus { get; set; }
         [Required]

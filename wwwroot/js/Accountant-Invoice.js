@@ -41,7 +41,6 @@ function ekUpload() {
         // Process all File objects
         for (var i = 0, f; f = files[i]; i++) {
             parseFile(f);
-            uploadFile(f);
         }
     }
 
@@ -56,18 +55,21 @@ function ekUpload() {
 
         console.log(file.name);
         output(
-            '<strong>' + encodeURI(file.name) + '</strong>'
+            '<strong>' + file.name + '</strong>'
         );
 
         // var fileType = file.type;
         // console.log(fileType);
         var imageName = file.name;
 
-        var isGood = (/\.(?=gif|jpg|png|jpeg)/gi).test(imageName);
+        var isGood = validateFile(file);
         if (isGood) {
             document.getElementById('start').classList.add("hidden");
             document.getElementById('response').classList.remove("hidden");
             document.getElementById('notimage').classList.add("hidden");
+            document.getElementById('btn_submit').classList.remove("hidden");
+
+
             // Thumbnail Preview
             document.getElementById('file-image').classList.remove("hidden");
             document.getElementById('file-image').src = URL.createObjectURL(file);
@@ -81,57 +83,11 @@ function ekUpload() {
         }
     }
 
-    function setProgressMaxValue(e) {
-        var pBar = document.getElementById('file-progress');
+    
+    
 
-        if (e.lengthComputable) {
-            pBar.max = e.total;
-        }
-    }
+        
 
-    function updateFileProgress(e) {
-        var pBar = document.getElementById('file-progress');
-
-        if (e.lengthComputable) {
-            pBar.value = e.loaded;
-        }
-    }
-
-    function uploadFile(file) {
-
-        var xhr = new XMLHttpRequest(),
-            fileInput = document.getElementById('class-roster-file'),
-            pBar = document.getElementById('file-progress'),
-            fileSizeLimit = 1024; // In MB
-        if (xhr.upload) {
-            // Check if file is less than x MB
-            if (file.size <= fileSizeLimit * 1024 * 1024) {
-                // Progress bar
-                pBar.style.display = 'inline';
-                xhr.upload.addEventListener('loadstart', setProgressMaxValue, false);
-                xhr.upload.addEventListener('progress', updateFileProgress, false);
-
-                // File received / failed
-                xhr.onreadystatechange = function (e) {
-                    if (xhr.readyState == 4) {
-                        // Everything is good!
-
-                        // progress.className = (xhr.status == 200 ? "success" : "failure");
-                        // document.location.reload(true);
-                    }
-                };
-
-                // Start upload
-                xhr.open('POST', document.getElementById('file-upload-form').action, true);
-                xhr.setRequestHeader('X-File-Name', file.name);
-                xhr.setRequestHeader('X-File-Size', file.size);
-                xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-                xhr.send(file);
-            } else {
-                output('Please upload a smaller file (< ' + fileSizeLimit + ' MB).');
-            }
-        }
-    }
 
     // Check for the various File API support.
     if (window.File && window.FileList && window.FileReader) {
@@ -147,3 +103,30 @@ ekUpload();
 $(document).ready(function () {
     $("#myTable").DataTable();
 })
+
+function validateFile(file) {
+    const allowedExtensions = ["pdf", "jpg", "jpeg", "png"];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const allowedMimeTypes = ["application/pdf", "image/jpeg", "image/png"];
+
+    // Check file extension
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+        alert("Invalid file extension. Allowed extensions are: " + allowedExtensions.join(", "));
+        return false;
+    }
+
+    // Check file size
+    if (file.size > maxFileSize) {
+        alert("File size exceeds the limit. Maximum file size is " + (maxFileSize / (1024 * 1024)) + "MB");
+        return false;
+    }
+
+    // Check MIME type
+    if (!allowedMimeTypes.includes(file.type)) {
+        alert("Invalid file type. Allowed file types are: " + allowedMimeTypes.join(", "));
+        return false;
+    }
+
+    return true;
+}

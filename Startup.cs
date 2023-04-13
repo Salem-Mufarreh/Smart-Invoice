@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Smart_Invoice.Utility;
+using System.Configuration;
 
 namespace Smart_Invoice
 {
@@ -11,6 +13,8 @@ namespace Smart_Invoice
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();
+            app.UseSession();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -24,5 +28,8 @@ namespace Smart_Invoice
             });
         }
 
+        public void ConfigureServices(IServiceCollection services)
+        {
+        }
     }
 }

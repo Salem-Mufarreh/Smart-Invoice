@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Storage.v1" Version="1.60.0.2981" />
+    <PackageReference Include="Google.Cloud.DocumentAI.V1" Version="3.6.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.15" />
@@ -28,6 +31,7 @@
     <Folder Include="Areas\Accountant\Models\" />
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Uploaded Files\" />
   </ItemGroup>
 
 </Project>

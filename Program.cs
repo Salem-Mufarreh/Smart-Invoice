@@ -1,4 +1,7 @@
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.DocumentAI.V1;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.EntityFrameworkCore;
 using Smart_Invoice.Data;
 using Smart_Invoice.Utility;
@@ -18,9 +21,15 @@ builder.Services.AddControllersWithViews();
 builder.Services.Configure<ExchangeRateAPi>(builder.Configuration.GetSection("ExchangeRatesAPI"));
 
 builder.Services.AddHttpClient();
+builder.Services.AddSession();
+builder.Services.AddDistributedMemoryCache();
+
 
 
 var app = builder.Build();
+/* Document AI */
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
