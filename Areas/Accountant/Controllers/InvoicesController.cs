@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Google.Api.Gax.ResourceNames;
-using Google.Cloud.DocumentAI.V1;
-using Google.Apis.Storage.v1;
+﻿using Google.Cloud.DocumentAI.V1;
+using Google.Cloud.Storage.V1;
+using Google.Cloud.Vision.V1;
 using Google.Protobuf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Smart_Invoice.Areas.Identity.Pages.Account;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models;
-using Smart_Invoice.Utility;
-using Google.Cloud.Storage.V1;
+using System.Drawing;
 using System.Text;
-using Smart_Invoice.Areas.Identity.Pages.Account;
-using NuGet.Configuration;
+using static Google.Rpc.Context.AttributeContext.Types;
+using Google.Api;
+using Image = Google.Cloud.Vision.V1.Image;
+using System.Drawing.Imaging;
+using Microsoft.Extensions.Options;
+using Smart_Invoice.Utility;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -25,11 +27,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LoginModel> _logger;
+        private readonly string _OpenAi;
 
-        public InvoicesController(ApplicationDbContext context, ILogger<LoginModel> logger)
+        public InvoicesController(ApplicationDbContext context, ILogger<LoginModel> logger, IOptions<OpenAiSettings> settings)
         {
             _context = context;
             _logger = logger;
+            _OpenAi = settings.Value.apiKey;
         }
 
         // GET: Accountant/Invoices
@@ -63,8 +67,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address");
-
             
+
             return View();
         }
 
@@ -75,38 +79,106 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(IFormFile file)
         {
-            // Extract the Invoice using API call
-            Google.Cloud.DocumentAI.V1.Document document = await ExtractInvoice(file);
-            // Upload the invoice to the cloud bucket 
-            var uploaded = CloudUpload(file);
+            try
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    // Create an instance of System.Drawing.Image from the stream
+                    var image = System.Drawing.Image.FromStream(stream);
+
+                    // Create a MemoryStream to write the image data to
+                    var memoryStream = new MemoryStream();
+
+                    // Save the image to the MemoryStream in the format you need (e.g. PNG, JPEG)
+                    image.Save(memoryStream, ImageFormat.Jpeg);
+
+                    // Get the byte array from the MemoryStream
+                    byte[] imageBytes = memoryStream.ToArray();
+
+                    // Convert the byte array to a base64 string if needed
+                    string base64Image = Convert.ToBase64String(imageBytes);
+                    
+
+                    /* var document = await VisionExtract(image);
+                     var respone = await CallOpenAi(document);
+                     ViewBag.response = respone;*/
+                    string response;
+                    using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
+                    {
+                        var responseOBj = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+                        response = JsonConvert.SerializeObject(responseOBj);
+                    }
+                    
+
+                    //return View(nameof(Edit), (response, base64Image));
+                    TempData["model"] = response;
+                    HttpContext.Session.Set("image", imageBytes);
+                    return RedirectToAction(nameof(Edit));
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+/*            try
+            {
+                _logger.LogInformation("User is applying filter");
+                //await ApplyFilter(file);
+                var document = (Google.Cloud.DocumentAI.V1.Document)await ExtractInvoice(file);
+                Image image = Image.FromFile( Path.Combine(Directory.GetCurrentDirectory(), "Uploaded Files", file.FileName) );
+                var imageWidth = image.Width;
+                var imageHeight = image.Height;
+                Graphics graphics = Graphics.FromImage(image);
+                Pen pen = new Pen(Color.Red, 2);
+                foreach (var block in document.Pages[0].Blocks)
+                {
+                    // If the block contains text, draw a rectangle around it
+
+                    {
+                        // Get the location of the block on the page
+                        var blockBounds = block.Layout.BoundingPoly.NormalizedVertices;
+
+                        // Calculate the x, y, width, and height of the rectangle
+                        float x = blockBounds[0].X * imageWidth;
+                        float y = blockBounds[0].Y * imageHeight;
+                        float width = (blockBounds[1].X - blockBounds[0].X) * imageWidth;
+                        float height = (blockBounds[2].Y - blockBounds[0].Y) * imageHeight;
+
+                        // Draw a rectangle around the text using the calculated x, y, width, and height values
+                        graphics.DrawRectangle(pen, x, y, width, height);
+                    }
+                }
+                string outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Modified Images", file.FileName);
+                image.Save(outputFilePath);
+                graphics.Dispose();
+                image.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+*/            return View();
+           
+        }
+        [HttpGet]
+        public async Task<IActionResult> DocumentValidate(DocumentValidateModel model)
+        {   
             
-            /* if (ModelState.IsValid)
-             {
-                 _context.Add(invoice);
-                 await _context.SaveChangesAsync();
-                 return RedirectToAction(nameof(Index));
-             }
-             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address", invoice.CustomerId);*/
-            return View();
+            return View(model);
         }
        
  
 
         // GET: Accountant/Invoices/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(UtilityInvoice? invoice)
         {
-            if (id == null || _context.Invoices == null)
-            {
-                return NotFound();
-            }
-
-            var invoice = await _context.Invoices.FindAsync(id);
-            if (invoice == null)
-            {
-                return NotFound();
-            }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address", invoice.CustomerId);
-            return View(invoice);
+            /*var response2 = TempData["model"] as string;
+            var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
+            byte[] imageBytes = HttpContext.Session.Get("image");
+            string base64Image = Convert.ToBase64String(imageBytes);
+            ViewBag.Base64Image = base64Image;
+            return View();
         }
 
         // POST: Accountant/Invoices/Edit/5
@@ -114,35 +186,19 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CustomerId,InvoiceNumber,InvoiceDate,DueDate,TotalAmount,CurrencyCode,PaymentStatus,PaymentDate,ExchangeRate,EffectiveDate,TaxPercentage,TaxTotal")] Invoice invoice)
+        public async Task<IActionResult> Edit(IFormFile file)
         {
-            if (id != invoice.Id)
+            try
             {
-                return NotFound();
-            }
+                var uploadpath = Path.Combine(Directory.GetCurrentDirectory(),"Uploaded Files", file.FileName);
+                var stream = new FileStream(uploadpath, FileMode.Create);
+                await file.CopyToAsync(stream);
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(invoice);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!InvoiceExists(invoice.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address", invoice.CustomerId);
-            return View(invoice);
+            catch (Exception ex) {
+                _logger.LogError(ex.Message);
+            }
+            return View();
         }
 
         // GET: Accountant/Invoices/Delete/5
@@ -227,14 +283,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return false;
             }
         }
-        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice(
-            IFormFile file,
-            
-            string projectId = "document-ea-369818",
-            string locationId = "eu",
-            string processorId = "578778ce00c7a18",
-            string mimeType = "application/pdf")
+        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice (IFormFile file)
         {
+            const string projectId = "document-ea-369818";
+            const string locationId = "eu";
+            const string processorId = "578778ce00c7a18";
+            const string mimeType = "image/png";
             // Create client
             var client = new DocumentProcessorServiceClientBuilder
             {
@@ -257,12 +311,103 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             };
 
             // Make the request
-            var response = client.ProcessDocument(request);
+            try
+            {
+                ProcessResponse response = client.ProcessDocument(request);
+                var document = response.Document;
+                var pagelayout = response.Document.Pages[0].Layout;
+                var pageAnchor = pagelayout.TextAnchor;
+                var x = pageAnchor.TextSegments[0].StartIndex;
+                var y = document.Pages[0].Blocks;
 
-            var document = response.Document;
-            return document;
+                
+
+
+                return document;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            return null;
         }
 
+        /* this function will recive the file from html form and save to temp location,
+         * it will read the file from the temp location and transform the pixels to 
+         * grayscale color to reduce any noise and focuse more on the fonts.
+         * Document Ai already have pre-processing for images*/
+        public async Task<Boolean> ApplyFilter(IFormFile file)
+        {
+            try
+            {
+
+                var uploadpath = Path.Combine(Path.GetTempPath(), "Uploaded Files", file.FileName);
+                using (var stream = new FileStream(uploadpath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                Bitmap bitmap = new Bitmap(uploadpath);
+                Color p;
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        p = bitmap.GetPixel(x, y);
+                        int a = (int)p.A;
+                        int b = (int)p.B;
+                        int r = (int)p.R;
+                        int g = (int)p.G;
+
+                        int avg = (r + g + b) / 3;
+                        bitmap.SetPixel(x, y, Color.FromArgb(avg, avg, avg));
+
+                    }
+                }
+                var uploadpath2 = Path.Combine(Directory.GetCurrentDirectory(), "Uploaded Files", file.FileName);
+                bitmap.Save(uploadpath2);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+
+            return true;
+            
+        }
+
+        public async Task<string> CallOpenAi(string rawdocument)
+        {
+            
+            var prompt =  "can you structure an invoice from this data as key-value pair in json : '"+rawdocument+"'";
+            var apiKey = _OpenAi;
+            var model = "text-davinci-003";
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            var data = new { prompt = prompt, model = model , max_tokens = 1500};
+            var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("https://api.openai.com/v1/completions", content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var jsonObject = JObject.Parse(responseString);
+            var choices = jsonObject["choices"].First;
+            var text = choices["text"].ToString();
+
+            return text;
+
+        }
+
+        public async Task<string> VisionExtract(Image image)
+        {
+            ImageAnnotatorClient client = ImageAnnotatorClient.Create();
+            //Image image = Image.FromFile("./Modified Images/IMG_3205.jpg");
+            TextAnnotation text = await client.DetectDocumentTextAsync(image);
+            
+            return text.Text;
+        }
         #endregion
     }
 }

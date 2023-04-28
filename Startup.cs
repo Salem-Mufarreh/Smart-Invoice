@@ -30,6 +30,7 @@ namespace Smart_Invoice
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSession();
         }
     }
 }

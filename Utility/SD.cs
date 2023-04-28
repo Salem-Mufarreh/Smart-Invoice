@@ -5,6 +5,9 @@
     {
         /* Roles */
         public const string Role_Admin = "Admin";
+        public const string Role_Accountant = "Accountant";
+
+
 
         /* Status */
         public const string StatusPending = "Pending";

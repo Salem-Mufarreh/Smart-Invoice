@@ -335,10 +335,6 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<DateTime>("InvoiceDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("InvoiceDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("InvoiceNumber")
                         .HasMaxLength(50)
                         .HasColumnType("int");
@@ -351,9 +347,6 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.Property<double>("TaxPercentage")
                         .HasColumnType("float");
 
@@ -361,9 +354,6 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("float");
 
                     b.Property<double>("TotalAmount")
-                        .HasColumnType("float");
-
-                    b.Property<double>("UnitPrice")
                         .HasColumnType("float");
 
                     b.HasKey("Id");
