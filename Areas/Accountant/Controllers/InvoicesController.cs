@@ -19,6 +19,7 @@ using Image = Google.Cloud.Vision.V1.Image;
 using System.Drawing.Imaging;
 using Microsoft.Extensions.Options;
 using Smart_Invoice.Utility;
+using AspNetCore;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -81,36 +82,36 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             try
             {
+                
+
                 using (var stream = file.OpenReadStream())
                 {
-                    // Create an instance of System.Drawing.Image from the stream
+                    /*Convert IFromFile to System.Drawing.Image and to Google.Cloud.Vision.Image*/
+
                     var image = System.Drawing.Image.FromStream(stream);
-
-                    // Create a MemoryStream to write the image data to
                     var memoryStream = new MemoryStream();
-
-                    // Save the image to the MemoryStream in the format you need (e.g. PNG, JPEG)
                     image.Save(memoryStream, ImageFormat.Jpeg);
-
-                    // Get the byte array from the MemoryStream
                     byte[] imageBytes = memoryStream.ToArray();
-
-                    // Convert the byte array to a base64 string if needed
                     string base64Image = Convert.ToBase64String(imageBytes);
-                    
 
-                    /* var document = await VisionExtract(image);
-                     var respone = await CallOpenAi(document);
-                     ViewBag.response = respone;*/
+                    var client = ImageAnnotatorClient.Create();
+                    var imageContent = ByteString.CopyFrom(imageBytes);
+                    var imageProto = new Image()
+                    {
+                        Content = imageContent,
+                    };
+
+                    /* Call API's */
+                    /*var document = await VisionExtract(imageProto);
+                    var respone = await CallOpenAi(document);
+                    ViewBag.response = respone;*/
+
                     string response;
                     using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
                     {
                         var responseOBj = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
                         response = JsonConvert.SerializeObject(responseOBj);
                     }
-                    
-
-                    //return View(nameof(Edit), (response, base64Image));
                     TempData["model"] = response;
                     HttpContext.Session.Set("image", imageBytes);
                     return RedirectToAction(nameof(Edit));
@@ -120,53 +121,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
+                return View(nameof(Views_Shared_Error));
             }
-/*            try
-            {
-                _logger.LogInformation("User is applying filter");
-                //await ApplyFilter(file);
-                var document = (Google.Cloud.DocumentAI.V1.Document)await ExtractInvoice(file);
-                Image image = Image.FromFile( Path.Combine(Directory.GetCurrentDirectory(), "Uploaded Files", file.FileName) );
-                var imageWidth = image.Width;
-                var imageHeight = image.Height;
-                Graphics graphics = Graphics.FromImage(image);
-                Pen pen = new Pen(Color.Red, 2);
-                foreach (var block in document.Pages[0].Blocks)
-                {
-                    // If the block contains text, draw a rectangle around it
-
-                    {
-                        // Get the location of the block on the page
-                        var blockBounds = block.Layout.BoundingPoly.NormalizedVertices;
-
-                        // Calculate the x, y, width, and height of the rectangle
-                        float x = blockBounds[0].X * imageWidth;
-                        float y = blockBounds[0].Y * imageHeight;
-                        float width = (blockBounds[1].X - blockBounds[0].X) * imageWidth;
-                        float height = (blockBounds[2].Y - blockBounds[0].Y) * imageHeight;
-
-                        // Draw a rectangle around the text using the calculated x, y, width, and height values
-                        graphics.DrawRectangle(pen, x, y, width, height);
-                    }
-                }
-                string outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Modified Images", file.FileName);
-                image.Save(outputFilePath);
-                graphics.Dispose();
-                image.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-*/            return View();
+           
            
         }
-        [HttpGet]
-        public async Task<IActionResult> DocumentValidate(DocumentValidateModel model)
-        {   
-            
-            return View(model);
-        }
+  
        
  
 
