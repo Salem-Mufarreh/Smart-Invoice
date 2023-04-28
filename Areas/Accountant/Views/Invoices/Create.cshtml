@@ -1,0 +1,97 @@
+﻿@model Smart_Invoice.Models.Invoice
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<link rel="stylesheet" href="/css/AddInvoice.css" />
+<h1>Create</h1>
+
+<h4>Invoice</h4>
+<hr />
+
+
+<section>
+
+<div class="uploader">
+   <form method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+        <input type="file" id="file-upload" name="file" hidden/>
+
+        <label for="file-upload" id="file-drag">
+            <img id="file-image" src="#" alt="Preview" class="hidden preview">
+            <div id="start">
+              <i class="fa fa-download" aria-hidden="true"></i>
+              <div>Select a file or drag here</div>
+              <div id="notimage" class="hidden">Please select an image</div>
+              <span id="file-upload-btn" class="btn btn-primary" type="submit">Select a file</span>
+            </div>
+             <div id="response" class="hidden">
+      <div id="messages"></div>
+      
+      <button type="submit" class="hidden btn btn-primary" id="btn_submit">Submit</button>
+        </label>
+    </form>
+</div>
+</section>
+<br />
+<div>
+    <h2>Processed Invoices</h2>
+    <hr />
+    <table id="myTable" class="display">
+    <thead>
+        <tr>
+            <th>Invoice Number</th>
+            <th>Company</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+
+        </tr>
+        <tr>
+            <td>Row 2 Data 1</td>
+            <td>Row 2 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+        </tr>
+         <tr>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+        </tr>
+        <tr>
+            <td>Row 2 Data 1</td>
+            <td>Row 2 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+            <td>Row 1 Data 1</td>
+            <td>Row 1 Data 2</td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<script src="/js/Accountant-Invoice.js"></script>
