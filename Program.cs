@@ -19,7 +19,6 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-builder.Services.Configure<ExchangeRateAPi>(builder.Configuration.GetSection("ExchangeRatesAPI"));
 
 builder.Services.AddHttpClient();
 builder.Services.AddSession();
