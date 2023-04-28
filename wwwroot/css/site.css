@@ -16,36 +16,3 @@ html {
 body {
   margin-bottom: 60px;
 }
-
-/* Admin Dashboard  */
-
-
-
-.card {
-    position: relative;
-    width: 300px;
-    height: 190px;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.15);
-    transition: 0.5s;
-    flex-direction:row;
-    padding:1em;
-}
-.card .content {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    overflow: hidden;
-}
-.event-item {
-    padding:8px;
-    border: 1px solid rgba(0,0,0,.125);
-    background: #fff;
-    transition: 0.5s;
-    border-radius: 0.5em;
-    box-shadow: 0 12px 80px rgba(0, 0, 0, 0.15);
-}

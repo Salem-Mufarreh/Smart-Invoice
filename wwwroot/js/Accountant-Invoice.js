@@ -106,7 +106,7 @@ $(document).ready(function () {
 
 function validateFile(file) {
     const allowedExtensions = ["pdf", "jpg", "jpeg", "png"];
-    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const maxFileSize = 40 * 1024 * 1024; // 5MB
     const allowedMimeTypes = ["application/pdf", "image/jpeg", "image/png"];
 
     // Check file extension

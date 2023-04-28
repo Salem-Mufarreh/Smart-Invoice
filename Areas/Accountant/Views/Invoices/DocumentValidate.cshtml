@@ -1,0 +1,17 @@
+﻿@model Smart_Invoice.Models.DocumentValidateModel
+
+
+@{
+    ViewData["Title"] = "DocumentValidate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>DocumentValidate</h1>
+<div>
+
+<!-- Access the Document and File properties -->
+<img src="@Model.File" />
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

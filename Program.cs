@@ -16,6 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<ExchangeRateAPi>(builder.Configuration.GetSection("ExchangeRatesAPI"));
@@ -23,12 +24,13 @@ builder.Services.Configure<ExchangeRateAPi>(builder.Configuration.GetSection("Ex
 builder.Services.AddHttpClient();
 builder.Services.AddSession();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.Configure<OpenAiSettings>(builder.Configuration.GetSection("OpenAi"));
+builder.Services.Configure<ExchangeRateAPi>(builder.Configuration.GetSection("ExchangeRatesAPI"));
 
 
 
 var app = builder.Build();
 /* Document AI */
-
 
 
 // Configure the HTTP request pipeline.
@@ -53,7 +55,7 @@ app.UseAuthentication();
 
 
 app.UseRouting();
-
+app.UseSession();
 app.MapRazorPages();
 app.UseAuthorization();
 
@@ -69,4 +71,20 @@ app.UseEndpoints(endpoints =>
       pattern: "{controller=Home}/{action=Index}/{id?}"
     );
 });
+
+using (var scope = app.Services.CreateScope()) 
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    var roles = new[] { SD.Role_Admin, SD.Role_Accountant };
+
+    foreach (var item in roles)
+    {
+        if(! await roleManager.RoleExistsAsync(item))
+        {
+            await roleManager.CreateAsync(new IdentityRole(item));
+        }
+    }
+}
+
 app.Run();

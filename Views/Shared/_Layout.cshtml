@@ -6,11 +6,7 @@
     <title>@ViewData["Title"] - Smart_Invoice</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.slim.min.js"></script>
-
-
+    <link rel="stylesheet" href="~/Smart_Invoice.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -29,23 +25,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Accountant
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Invoices">List</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Invoices">Add Invoice</a></li>
-                            </ul>
-                        </li>
-                          <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Admin
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Admin" asp-action="Index" asp-controller="Home">Dashboard</a></li>
-                            </ul>
-                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -63,10 +42,9 @@
             &copy; 2023 - Smart_Invoice - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/datatables.js"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
