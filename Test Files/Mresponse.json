@@ -1,16 +1,16 @@
 {
-  "Company": "JERUSALEM DISTRICT ELECTRICITY CO. LTD.",
-  "CompanyAddress": "15 Salah - El-Din Street - Jerusalem - P.O.Box 19118 - Tel 6269333 - Fak. 5282441",
-  "VATDealer": "",
-  "POS_Number": "POS 102 9102770",
-  "Time": "17:57:27 19/04/2023",
-  "Customer_Name": "رامي يعقوب مسعد",
+  "Incoive_Companay": "JERUSALEM DISTRICT ELECTRICITY CO. LTD.",
+  "Company_Address": "15 Salah - El-Din Street - Jerusalem - P.O.Box 19118 - Tel 6269333 - Fak. 5282441",
+  "Company_License_Registration_Number": "",
+  "Invoice_Number": "POS 102 9102770",
+  "Invoice_Date": "17:57:27 19/04/2023",
+  "Invoice_Client_Name": "رامي يعقوب مسعد",
   "Service_Number": "201349738",
   "Meter_Number": "208113560548",
   "Previous_Reading_Date": "17/04/2023",
   "Current_Reading": "96862.00",
   "Category": "تجاري - دفع مسبق",
-  "VAT": "13.79",
+  "Invoice_VAT": "13.79",
   "Previous_Debt": "0.00",
-  "Paid_Amount": "100.00"
+  "Invoice_Amount": "100.00"
 }

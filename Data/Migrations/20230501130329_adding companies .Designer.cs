@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230501130329_adding companies ")]
+    partial class addingcompanies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -423,7 +425,7 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Current_Reading")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Incoive_Company")
+                    b.Property<string>("Incoive_Companay")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double?>("Invoice_Amount")

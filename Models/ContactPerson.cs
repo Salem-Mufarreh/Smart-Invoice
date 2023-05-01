@@ -19,11 +19,7 @@ namespace Smart_Invoice.Models
         [Required]
         [StringLength(50)]
         public string PhoneNumber { get; set; }
-        [Required]
-        [StringLength(50)]
-        [ForeignKey("CustomerId")]
-        public Customer Customer { get; set; }
-
+      
 
     }
 }

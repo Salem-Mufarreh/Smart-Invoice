@@ -19,7 +19,7 @@ using Image = Google.Cloud.Vision.V1.Image;
 using System.Drawing.Imaging;
 using Microsoft.Extensions.Options;
 using Smart_Invoice.Utility;
-using AspNetCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -40,8 +40,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Invoices
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Invoices.Include(i => i.Customer);
-            List<Invoice> invoices = await applicationDbContext.ToListAsync();
+            var applicationDbContext = _context.UtilityInvoices;
+            List<IParsedInvoice> invoices = await applicationDbContext.ToListAsync<IParsedInvoice>();
             return View(invoices);
         }
 
@@ -121,8 +121,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return View(nameof(Views_Shared_Error));
             }
+            return View();
            
            
         }
@@ -131,14 +131,32 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
  
 
         // GET: Accountant/Invoices/Edit/5
-        public async Task<IActionResult> Edit(UtilityInvoice? invoice)
+        public async Task<IActionResult> Edit()
         {
             /*var response2 = TempData["model"] as string;
             var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
+            try { 
+            IParsedInvoice response;
+
+            using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
+            {
+
+                    response = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+            }
             byte[] imageBytes = HttpContext.Session.Get("image");
             string base64Image = Convert.ToBase64String(imageBytes);
             ViewBag.Base64Image = base64Image;
-            return View();
+            var company = _context.Companies.Where(x => x.Company_Name.Contains(response.Incoive_Company)).FirstOrDefault();
+                if (company != null)
+                {
+                    ViewBag.Company_License_Registration_Number = company.Company_License_Registration_Number;
+                }
+            return View(response);
+            }catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return View();
+            }
         }
 
         // POST: Accountant/Invoices/Edit/5
@@ -146,19 +164,56 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(IFormFile file)
+        public async Task<IActionResult> Edit(IFormCollection rawInvoice)
         {
-            try
+            
+            if (!ModelState.IsValid)
             {
-                var uploadpath = Path.Combine(Directory.GetCurrentDirectory(),"Uploaded Files", file.FileName);
-                var stream = new FileStream(uploadpath, FileMode.Create);
-                await file.CopyToAsync(stream);
+                //TODO: Add Toastr Notifications
+                _logger.LogError(ModelState.ToString());
+                return RedirectToAction(nameof(Create));
+            }
+            else
+            {
+                //TODO: Edit the image so the signature of the user can be displayed on it 
+                // or make a new document as and attached the information with it 
+                if (rawInvoice.Keys.Contains("Meter_Number"))
+                {
+                    UtilityInvoice invoice = new UtilityInvoice();
+                    //This invoice is Utility Invoice
+                    foreach (var item in rawInvoice.Keys)
+                    {
+                        var property = typeof(UtilityInvoice).GetProperty(item);
+                        if (property != null)
+                        {
+                            var value = rawInvoice[item].ToString();
+                            if(property.Name.Contains("Invoice_Amount") || property.Name.Contains("Invoice_VAT"))
+                            {
+                                property.SetValue(invoice, Double.Parse(value));
+                            }
+                            else { 
+                                property.SetValue(invoice, value.Normalize());
+                            }
+                        }
+                    }
+                    var company = _context.Companies.Where(c => c.Company_Name.
+                    Contains(invoice.Incoive_Company)).FirstOrDefault();
+                    //TODO if company is null Create a new company 
+                    invoice.Company_Id = company;
+                    invoice.Id = Guid.NewGuid().ToString();
+                    _context.Add(invoice);
+                    await _context.SaveChangesAsync();
 
+                }
+
+
+                _logger.LogInformation(User.Identity.Name + "Has Submited a new Document ");
+
+                return RedirectToAction(nameof(Index));
+                //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }
-            catch (Exception ex) {
-                _logger.LogError(ex.Message);
-            }
-            return View();
+           
+           
         }
 
         // GET: Accountant/Invoices/Delete/5
