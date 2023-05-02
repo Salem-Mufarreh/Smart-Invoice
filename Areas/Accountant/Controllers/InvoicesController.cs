@@ -141,7 +141,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
             {
 
-                    response = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+                    response = (IParsedInvoice)JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
             }
             byte[] imageBytes = HttpContext.Session.Get("image");
             string base64Image = Convert.ToBase64String(imageBytes);
