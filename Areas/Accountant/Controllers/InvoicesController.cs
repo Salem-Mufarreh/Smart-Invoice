@@ -143,11 +143,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
 
                     response = (IParsedInvoice)JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
-                }
-                byte[] imageBytes = HttpContext.Session.Get("image");
-                string base64Image = Convert.ToBase64String(imageBytes);
-                ViewBag.Base64Image = base64Image;
-                var company = _context.Companies.Where(x => x.Company_Name.Contains(response.Incoive_Company)).FirstOrDefault();
+            }
+            byte[] imageBytes = HttpContext.Session.Get("image");
+            string base64Image = Convert.ToBase64String(imageBytes);
+            ViewBag.Base64Image = base64Image;
+            var company = _context.Companies.Where(x => x.Company_Name.Contains(response.Incoive_Company)).FirstOrDefault();
                 if (company != null)
                 {
                     ViewBag.Company_License_Registration_Number = company.Company_License_Registration_Number;
