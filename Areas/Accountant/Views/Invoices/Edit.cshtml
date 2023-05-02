@@ -1,6 +1,6 @@
 ﻿@using Smart_Invoice.Models;
-@model Smart_Invoice.Models.UtilityInvoice;
-
+@using Smart_Invoice.Models.Invoices;
+@model InvoiceViewModel;
 
 @{
     ViewData["Title"] = "Edit";
@@ -21,19 +21,99 @@
   <!-- Column 2 content -->
   <div class="column" style="width:50%">
       <form method="post">
-          @Html.AntiForgeryToken()
-        @foreach (var item in typeof(UtilityInvoice).GetProperties())
-        {
-            if (!item.Name.Equals("Id") && !item.Name.Equals("Company_Id") )
+        @Html.AntiForgeryToken()
+        @if(Model.ProductInvoice != null){
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Company_Name" 
+                name="Company.Company_Name" aria-required="true" 
+                value="@Model.ProductInvoice.Company.Company_Name" required/>
+                <label>Company Name</label>
+            </div>
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Invoice_Number" 
+                name="Invoice_Number" aria-required="true" 
+                value="@Model.ProductInvoice.Invoice_Number" required/>
+                <label>Invoice Number</label>
+            </div>
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Invoice_Date" 
+                name="Invoice_Date" aria-required="true" 
+                value="@Model.ProductInvoice.Invoice_Date" required/>
+                <label>Invoice Date</label>
+            </div>
+            <p>Items</p>
+            <hr />
+            var i = 0;
+            foreach(var product in Model.ProductInvoice.Items)
             {
                 <div class="form-floating" style="margin-bottom:0.5em">
-                <input class="form-control" id="@item.Name" name="@item.Name" aria-required="true" value="@item.GetValue(Model)" required/>
-                
-                <label>@item.Name</label>
-                
-            </div>
+                    <input class="form-control" id="Product @product.Name" name="Product @i" aria-required="true" value="@product.Name" required/>
+                    <label>Product Name</label>
+                </div>
+                <div class="form-floating" style="margin-bottom:0.5em">
+                    <input class="form-control" id="Unit" name="Unit @i" aria-required="true" value="@product.Unit" required/>
+                    <label>Unit</label>
+                </div>
+                <div class="form-floating" style="margin-bottom:0.5em">
+                    <input class="form-control" id="UnitPrice" name="UnitPrice @i" aria-required="true" value="@product.UnitPrice" required/>
+                    <label>Unit Price</label>
+                </div>
+                <div class="form-floating" style="margin-bottom:0.5em">
+                    <input class="form-control" id="Quantity" name="Quantity @i" aria-required="true" value="@product.Quantity" required/>
+                    <label>Quantity</label>
+                </div>
+                <div class="form-floating" style="margin-bottom:0.5em">
+                    <input class="form-control" id="Total" name="Total @i" aria-required="true" value="@product.Total" required/>
+                    <label>Total</label>
+                </div>
+                    <hr />
+                    i++;
             }
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Subtotal" 
+                name="Subtotal" aria-required="true" 
+                value="@Model.ProductInvoice.Subtotal" required/>
+                <label>Invoice SubTotal</label>
+            </div>
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Tax" 
+                name="Tax" aria-required="true" 
+                value="@Model.ProductInvoice.Tax" required/>
+                <label>Invoice TAX</label>
+            </div>
+            <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="Total" 
+                name="Total" aria-required="true" 
+                value="@Model.ProductInvoice.Total" required/>
+                <label>Invoice Total</label>
+            </div>
+
+            @*@foreach (var item in typeof(Product_Invoice).GetProperties())
+            {
+                if (!item.Name.Equals("Id") && !item.Name.Equals("Company_Id") )
+                {
+                        if (item.Name.Equals("Items"))
+                        {
+                            <p>Items</p>
+                            <hr />
+                            foreach(var product in Model.ProductInvoice.Items)
+                            {
+                                <div class="form-floating" style="margin-bottom:0.5em">
+                                    <input class="form-control" id="@item.Name" name="@item.Name" aria-required="true" value="@item.GetValue(Model.ProductInvoice)" required/>
+                                    <label>@item.Name</label>
+                                </div>
+                            }
+
+                        }
+                        <div class="form-floating" style="margin-bottom:0.5em">
+                    <input class="form-control" id="@item.Name" name="@item.Name" aria-required="true" value="@item.GetValue(Model.ProductInvoice)" required/>
+                
+                    <label>@item.Name</label>
+                     
+                    </div>
+                }
             
+            }*@
         }
         <script>
             if(@ViewBag.Company_License_Registration_Number != null){

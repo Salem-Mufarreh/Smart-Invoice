@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Test Files\test2.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ConvertApi" Version="3.0.8" />
     <PackageReference Include="Google.Apis" Version="1.60.0" />
     <PackageReference Include="Google.Apis.Storage.v1" Version="1.60.0.2981" />
@@ -37,6 +41,10 @@
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Uploaded Files\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Test Files\test2.json" />
   </ItemGroup>
 
 </Project>

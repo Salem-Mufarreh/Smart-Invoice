@@ -32,6 +32,17 @@
         public const string CurrancyNameUSD = "USD";
         public const string CurrancyNameILS = "ILS";
 
+        /* Invoice Types */
+        public const string InvoiceUtility = "Utility";
+        public const string InvoiceProduct = "Product";
+        public const string InvoiceService = "Service";
+
+        /* OpenAI Prompt */
+        public const string UtilityPrompt = "Can you restructure the given model as an invoice and" +
+            " return the values as a key-value JSON object, where the keys are predefined? The model" +
+            " contains the following fields: [Company (as object),invoice_number, service-number," +
+            "invoice_date,Meter_Number,Previous_Reading_Date,Current_Reading,Category,VAT,Previous_Debt,Paid_Amount]. " +
+            "Please provide the JSON structure for the invoice with the given fields and their corresponding values.";
 
 
 
