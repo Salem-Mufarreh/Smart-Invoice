@@ -1,0 +1,74 @@
+﻿@model IEnumerable<Smart_Invoice.Models.IParsedInvoice>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table" id="Invoices">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Incoive_Company)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Invoice_Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Invoice_Date)
+            </th>
+            
+            <th>
+                @Html.DisplayNameFor(model => model.Invoice_Amount)
+            </th>
+           
+           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Incoive_Company)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Invoice_Number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Invoice_Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Invoice_Amount)
+            </td>
+          
+         
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+<script>
+    
+$(document).ready(function () {
+    $("#Invoices").DataTable({
+        select: true,
+        buttons: [
+        { extend: 'create', editor: myEditor },
+        { extend: 'edit',   editor: myEditor },
+        { extend: 'remove', editor: myEditor }
+    ]
+    });
+})
+</script>

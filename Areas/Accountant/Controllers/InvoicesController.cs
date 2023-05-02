@@ -19,6 +19,7 @@ using Image = Google.Cloud.Vision.V1.Image;
 using System.Drawing.Imaging;
 using Microsoft.Extensions.Options;
 using Smart_Invoice.Utility;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -39,8 +40,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Invoices
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Invoices.Include(i => i.Customer);
-            List<Invoice> invoices = await applicationDbContext.ToListAsync();
+            var applicationDbContext = _context.UtilityInvoices;
+            List<IParsedInvoice> invoices = await applicationDbContext.ToListAsync<IParsedInvoice>();
             return View(invoices);
         }
 
@@ -81,36 +82,36 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             try
             {
+                
+
                 using (var stream = file.OpenReadStream())
                 {
-                    // Create an instance of System.Drawing.Image from the stream
+                    /*Convert IFromFile to System.Drawing.Image and to Google.Cloud.Vision.Image*/
+
                     var image = System.Drawing.Image.FromStream(stream);
-
-                    // Create a MemoryStream to write the image data to
                     var memoryStream = new MemoryStream();
-
-                    // Save the image to the MemoryStream in the format you need (e.g. PNG, JPEG)
                     image.Save(memoryStream, ImageFormat.Jpeg);
-
-                    // Get the byte array from the MemoryStream
                     byte[] imageBytes = memoryStream.ToArray();
-
-                    // Convert the byte array to a base64 string if needed
                     string base64Image = Convert.ToBase64String(imageBytes);
-                    
 
-                    /* var document = await VisionExtract(image);
-                     var respone = await CallOpenAi(document);
-                     ViewBag.response = respone;*/
+                    var client = ImageAnnotatorClient.Create();
+                    var imageContent = ByteString.CopyFrom(imageBytes);
+                    var imageProto = new Image()
+                    {
+                        Content = imageContent,
+                    };
+
+                    /* Call API's */
+                    /*var document = await VisionExtract(imageProto);
+                    var respone = await CallOpenAi(document);
+                    ViewBag.response = respone;*/
+
                     string response;
                     using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
                     {
                         var responseOBj = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
                         response = JsonConvert.SerializeObject(responseOBj);
                     }
-                    
-
-                    //return View(nameof(Edit), (response, base64Image));
                     TempData["model"] = response;
                     HttpContext.Session.Set("image", imageBytes);
                     return RedirectToAction(nameof(Edit));
@@ -121,64 +122,41 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 _logger.LogError(ex.Message);
             }
-/*            try
-            {
-                _logger.LogInformation("User is applying filter");
-                //await ApplyFilter(file);
-                var document = (Google.Cloud.DocumentAI.V1.Document)await ExtractInvoice(file);
-                Image image = Image.FromFile( Path.Combine(Directory.GetCurrentDirectory(), "Uploaded Files", file.FileName) );
-                var imageWidth = image.Width;
-                var imageHeight = image.Height;
-                Graphics graphics = Graphics.FromImage(image);
-                Pen pen = new Pen(Color.Red, 2);
-                foreach (var block in document.Pages[0].Blocks)
-                {
-                    // If the block contains text, draw a rectangle around it
-
-                    {
-                        // Get the location of the block on the page
-                        var blockBounds = block.Layout.BoundingPoly.NormalizedVertices;
-
-                        // Calculate the x, y, width, and height of the rectangle
-                        float x = blockBounds[0].X * imageWidth;
-                        float y = blockBounds[0].Y * imageHeight;
-                        float width = (blockBounds[1].X - blockBounds[0].X) * imageWidth;
-                        float height = (blockBounds[2].Y - blockBounds[0].Y) * imageHeight;
-
-                        // Draw a rectangle around the text using the calculated x, y, width, and height values
-                        graphics.DrawRectangle(pen, x, y, width, height);
-                    }
-                }
-                string outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Modified Images", file.FileName);
-                image.Save(outputFilePath);
-                graphics.Dispose();
-                image.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-*/            return View();
+            return View();
+           
            
         }
-        [HttpGet]
-        public async Task<IActionResult> DocumentValidate(DocumentValidateModel model)
-        {   
-            
-            return View(model);
-        }
+  
        
  
 
         // GET: Accountant/Invoices/Edit/5
-        public async Task<IActionResult> Edit(UtilityInvoice? invoice)
+        public async Task<IActionResult> Edit()
         {
             /*var response2 = TempData["model"] as string;
             var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
+            try { 
+            IParsedInvoice response;
+
+            using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
+            {
+
+                    response = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+            }
             byte[] imageBytes = HttpContext.Session.Get("image");
             string base64Image = Convert.ToBase64String(imageBytes);
             ViewBag.Base64Image = base64Image;
-            return View();
+            var company = _context.Companies.Where(x => x.Company_Name.Contains(response.Incoive_Company)).FirstOrDefault();
+                if (company != null)
+                {
+                    ViewBag.Company_License_Registration_Number = company.Company_License_Registration_Number;
+                }
+            return View(response);
+            }catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return View();
+            }
         }
 
         // POST: Accountant/Invoices/Edit/5
@@ -186,19 +164,56 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(IFormFile file)
+        public async Task<IActionResult> Edit(IFormCollection rawInvoice)
         {
-            try
+            
+            if (!ModelState.IsValid)
             {
-                var uploadpath = Path.Combine(Directory.GetCurrentDirectory(),"Uploaded Files", file.FileName);
-                var stream = new FileStream(uploadpath, FileMode.Create);
-                await file.CopyToAsync(stream);
+                //TODO: Add Toastr Notifications
+                _logger.LogError(ModelState.ToString());
+                return RedirectToAction(nameof(Create));
+            }
+            else
+            {
+                //TODO: Edit the image so the signature of the user can be displayed on it 
+                // or make a new document as and attached the information with it 
+                if (rawInvoice.Keys.Contains("Meter_Number"))
+                {
+                    UtilityInvoice invoice = new UtilityInvoice();
+                    //This invoice is Utility Invoice
+                    foreach (var item in rawInvoice.Keys)
+                    {
+                        var property = typeof(UtilityInvoice).GetProperty(item);
+                        if (property != null)
+                        {
+                            var value = rawInvoice[item].ToString();
+                            if(property.Name.Contains("Invoice_Amount") || property.Name.Contains("Invoice_VAT"))
+                            {
+                                property.SetValue(invoice, Double.Parse(value));
+                            }
+                            else { 
+                                property.SetValue(invoice, value.Normalize());
+                            }
+                        }
+                    }
+                    var company = _context.Companies.Where(c => c.Company_Name.
+                    Contains(invoice.Incoive_Company)).FirstOrDefault();
+                    //TODO if company is null Create a new company 
+                    invoice.Company_Id = company;
+                    invoice.Id = Guid.NewGuid().ToString();
+                    _context.Add(invoice);
+                    await _context.SaveChangesAsync();
 
+                }
+
+
+                _logger.LogInformation(User.Identity.Name + "Has Submited a new Document ");
+
+                return RedirectToAction(nameof(Index));
+                //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }
-            catch (Exception ex) {
-                _logger.LogError(ex.Message);
-            }
-            return View();
+           
+           
         }
 
         // GET: Accountant/Invoices/Delete/5

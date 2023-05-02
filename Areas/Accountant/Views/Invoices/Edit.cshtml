@@ -1,4 +1,5 @@
-﻿@model System.ValueTuple<Smart_Invoice.Models.UtilityInvoice, System.String>
+﻿@using Smart_Invoice.Models;
+@model Smart_Invoice.Models.UtilityInvoice;
 
 
 @{
@@ -19,8 +20,34 @@
 
   <!-- Column 2 content -->
   <div class="column" style="width:50%">
-    <h2>Column 2 heading</h2>
-    <p>Column 2 text goes here</p>
+      <form method="post">
+          @Html.AntiForgeryToken()
+        @foreach (var item in typeof(UtilityInvoice).GetProperties())
+        {
+            if (!item.Name.Equals("Id") && !item.Name.Equals("Company_Id") )
+            {
+                <div class="form-floating" style="margin-bottom:0.5em">
+                <input class="form-control" id="@item.Name" name="@item.Name" aria-required="true" value="@item.GetValue(Model)" required/>
+                
+                <label>@item.Name</label>
+                
+            </div>
+            }
+            
+        }
+        <script>
+            if(@ViewBag.Company_License_Registration_Number != null){
+                document.getElementById("Company_License_Registration_Number").value = @ViewBag.Company_License_Registration_Number;
+                document.getElementById("Company_License_Registration_Number").readOnly = true;
+                document.getElementById("Incoive_Companay").readOnly = true;
+
+            }
+
+        </script>
+        <button class="btn btn-success" type="submit">Submit</button>
+        </form>
+      
+   
   </div>
 </div>
 @*

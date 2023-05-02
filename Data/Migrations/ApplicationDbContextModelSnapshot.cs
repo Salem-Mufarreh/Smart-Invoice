@@ -224,6 +224,49 @@ namespace Smart_Invoice.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Smart_Invoice.Models.Company", b =>
+                {
+                    b.Property<int>("CompanyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyId"), 1L, 1);
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Company_License_Registration_Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Company_Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Company_Name_English")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Company_Name_Normilized")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ContactPersonId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CompanyId");
+
+                    b.HasIndex("ContactPersonId");
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("Smart_Invoice.Models.ContactPerson", b =>
                 {
                     b.Property<int>("ContactPersonId")
@@ -231,9 +274,6 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContactPersonId"), 1L, 1);
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -257,8 +297,6 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("ContactPersonId");
 
-                    b.HasIndex("CustomerId");
-
                     b.ToTable("Contacts");
                 });
 
@@ -275,15 +313,19 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Customer_Name_English")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Customer_Name_Normilized")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -295,11 +337,9 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZipCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CustomerId");
@@ -363,6 +403,63 @@ namespace Smart_Invoice.Data.Migrations
                     b.ToTable("Invoices");
                 });
 
+            modelBuilder.Entity("Smart_Invoice.Models.UtilityInvoice", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Company_Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Company_License_Registration_Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Current_Reading")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Incoive_Company")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("Invoice_Amount")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Invoice_Client_Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Invoice_Date")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Invoice_Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("Invoice_VAT")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Meter_Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Previous_Debt")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Previous_Reading_Date")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Service_Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("UtilityInvoices");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -414,15 +511,15 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Smart_Invoice.Models.ContactPerson", b =>
+            modelBuilder.Entity("Smart_Invoice.Models.Company", b =>
                 {
-                    b.HasOne("Smart_Invoice.Models.Customer", "Customer")
+                    b.HasOne("Smart_Invoice.Models.ContactPerson", "person")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("ContactPersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.Navigation("person");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoice", b =>
@@ -434,6 +531,17 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.UtilityInvoice", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Company", "Company_Id")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company_Id");
                 });
 #pragma warning restore 612, 618
         }
