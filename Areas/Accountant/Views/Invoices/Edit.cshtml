@@ -1,0 +1,33 @@
+﻿@model System.ValueTuple<Smart_Invoice.Models.UtilityInvoice, System.String>
+
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Invoice</h4>
+<hr />
+<div class="row">
+  <!-- Column 1 content -->
+  <div class="column" style="width:40%">
+    <img src="data:image/png;base64,@ViewBag.Base64Image" width="100%"/>
+
+  </div>
+
+  <!-- Column 2 content -->
+  <div class="column" style="width:50%">
+    <h2>Column 2 heading</h2>
+    <p>Column 2 text goes here</p>
+  </div>
+</div>
+@*
+    TODO: add zoom button using scale
+    TODO: add Rotate button using transform: rotate(90deg)
+*@
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
