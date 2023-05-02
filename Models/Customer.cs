@@ -20,6 +20,10 @@ namespace Smart_Invoice.Models
         public string? Phone { get; set; }
         [Required]
         public string? Email { get; set; }
+        [Required]
+        public string? Store_Tax_Number { get; set;}
+        public string? customer_number { get; set; }
+
 
 
     }

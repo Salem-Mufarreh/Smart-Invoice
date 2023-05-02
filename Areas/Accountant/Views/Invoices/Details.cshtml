@@ -1,4 +1,5 @@
-﻿@model Smart_Invoice.Models.Invoice
+﻿@using Smart_Invoice.Models.Invoices;
+@model Invoice
 
 @{
     ViewData["Title"] = "Details";
@@ -7,7 +8,7 @@
 
 <h1>Details</h1>
 
-<div>
+@*<div>
     <h4>Invoice</h4>
     <hr />
     <dl class="row">
@@ -84,7 +85,7 @@
             @Html.DisplayFor(model => model.TaxTotal)
         </dd>
     </dl>
-</div>
+</div>*@
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

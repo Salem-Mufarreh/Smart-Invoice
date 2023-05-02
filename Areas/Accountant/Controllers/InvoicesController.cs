@@ -10,16 +10,16 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Smart_Invoice.Areas.Identity.Pages.Account;
 using Smart_Invoice.Data;
-using Smart_Invoice.Models;
 using System.Drawing;
 using System.Text;
-using static Google.Rpc.Context.AttributeContext.Types;
-using Google.Api;
 using Image = Google.Cloud.Vision.V1.Image;
 using System.Drawing.Imaging;
 using Microsoft.Extensions.Options;
 using Smart_Invoice.Utility;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Dynamic;
+using System.Text.Json;
+using System.Linq;
+using Smart_Invoice.Models.Invoices;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -40,8 +40,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Invoices
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.UtilityInvoices;
-            List<IParsedInvoice> invoices = await applicationDbContext.ToListAsync<IParsedInvoice>();
+            var applicationDbContext = _context.Invoices.Include(i=> i.CompanyID);
+            List<Invoice> invoices = await applicationDbContext.ToListAsync<Invoice>();
             return View(invoices);
         }
 
@@ -54,7 +54,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             var invoice = await _context.Invoices
-                .Include(i => i.Customer)
+                .Include(i => i.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
@@ -102,14 +102,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     };
 
                     /* Call API's */
-                    /*var document = await VisionExtract(imageProto);
-                    var respone = await CallOpenAi(document);
-                    ViewBag.response = respone;*/
+                    //var document = await VisionExtract(imageProto);
+                    //var respone = await CallOpenAi(document);
+                    //ViewBag.response = respone;
 
                     string response;
                     using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
                     {
-                        var responseOBj = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+                        var responseOBj = JsonConvert.DeserializeObject<Invoice>(reader.ReadToEnd());
                         response = JsonConvert.SerializeObject(responseOBj);
                     }
                     TempData["model"] = response;
@@ -135,23 +135,29 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             /*var response2 = TempData["model"] as string;
             var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
-            try { 
-            IParsedInvoice response;
-
-            using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
+            try
             {
 
-                    response = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
-            }
-            byte[] imageBytes = HttpContext.Session.Get("image");
-            string base64Image = Convert.ToBase64String(imageBytes);
-            ViewBag.Base64Image = base64Image;
-            var company = _context.Companies.Where(x => x.Company_Name.Contains(response.Incoive_Company)).FirstOrDefault();
-                if (company != null)
+                string Sresponse;
+                using (StreamReader reader = new StreamReader("./Test Files/test2.json"))
                 {
-                    ViewBag.Company_License_Registration_Number = company.Company_License_Registration_Number;
+                    Sresponse = reader.ReadToEnd();
+
+
+
                 }
-            return View(response);
+                InvoiceViewModel viewModel = new InvoiceViewModel();
+
+                if (Sresponse.Contains("items"))
+                {
+                    viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
+                }
+                byte[] imageBytes = HttpContext.Session.Get("image");
+                string base64Image = Convert.ToBase64String(imageBytes);
+                ViewBag.Base64Image = base64Image;
+
+                return View(viewModel);
+            
             }catch(Exception ex)
             {
                 _logger.LogError(ex.Message);
@@ -197,13 +203,63 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         }
                     }
                     var company = _context.Companies.Where(c => c.Company_Name.
-                    Contains(invoice.Incoive_Company)).FirstOrDefault();
+                    Contains(invoice.Company.Company_Name)).FirstOrDefault();
                     //TODO if company is null Create a new company 
-                    invoice.Company_Id = company;
-                    invoice.Id = Guid.NewGuid().ToString();
+                    invoice.Company = company;
+                    invoice.Invoice_Id = Guid.NewGuid().ToString();
                     _context.Add(invoice);
                     await _context.SaveChangesAsync();
 
+                }
+                else
+                {
+                    if (rawInvoice.Keys.Contains("Product 0") || rawInvoice.Keys.Contains("UnitPrice 0"))
+                    {
+                        Product_Invoice invoice = new Product_Invoice();
+                        List<InvoiceItem> items = new List<InvoiceItem>();
+                        var i = 0;
+                        foreach (var item in rawInvoice.Keys)
+                        {
+                            var property = typeof(Product_Invoice).GetProperty(item);
+                            if (property != null)
+                            {
+                                var value = rawInvoice[item].ToString();
+                                if (property.Name.Contains("Invoice_Amount") || property.Name.Contains("Tax") 
+                                    || property.Name.Contains("Total") || property.Name.Contains("Subtotal"))
+                                {
+                                    property.SetValue(invoice, Double.Parse(value));
+                                }
+                                
+                                else
+                                {
+                                    property.SetValue(invoice, value.Normalize());
+                                }
+                                
+                            }
+                            else if (item.StartsWith("Product"))
+                            {
+                                InvoiceItem itemInvoice = new InvoiceItem();
+                                itemInvoice.Name = rawInvoice["Product "+i];
+                                itemInvoice.Unit = rawInvoice["Unit " + i];
+                                itemInvoice.UnitPrice = Double.Parse(rawInvoice["UnitPrice " + i]);
+                                itemInvoice.Quantity = Int32.Parse(rawInvoice["Quantity " + i]);
+                                itemInvoice.Total = Double.Parse(rawInvoice["Total "+i]);
+                                i++;
+                                items.Add(itemInvoice);
+                            }
+                        }
+                        
+                        var company = _context.Companies.Where(c => c.Company_Name.
+                                Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
+                        //TODO if company is null Create a new company 
+                        invoice.Company = company;
+                        invoice.Items = items.ToArray();
+                        invoice.Invoice_Id = Guid.NewGuid().ToString();
+                        invoice.Invoice_Type = SD.InvoiceProduct;
+                        invoice.CompanyID = company;
+                        _context.Add(invoice);
+                        await _context.SaveChangesAsync();
+                    }
                 }
 
 
@@ -225,7 +281,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             var invoice = await _context.Invoices
-                .Include(i => i.Customer)
+                .Include(i => i.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (invoice == null)
             {
