@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="document-ea-369818-e1210e811251.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ConvertApi" Version="3.0.8" />
     <PackageReference Include="Google.Apis" Version="1.60.0" />
     <PackageReference Include="Google.Apis.Storage.v1" Version="1.60.0.2981" />
