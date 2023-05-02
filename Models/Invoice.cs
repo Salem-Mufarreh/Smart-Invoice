@@ -14,8 +14,8 @@ namespace Smart_Invoice.Models
         [Required]
         [StringLength(50)]
         public int InvoiceNumber { get; set; }
-
-
+  
+       
         [Required]
         public DateTime InvoiceDate { get; set; }
         [Required]
@@ -33,7 +33,7 @@ namespace Smart_Invoice.Models
         /* the exchange rate takes the USD as the base currancy */
         [Required]
         public Double ExchangeRate { get; set; }
-        /* effective date is the date when the currancy exchange happend */
+        /* effective date is the date when the currancy exchange happend */ 
         [Required]
         public DateTime EffectiveDate { get; set; }
         [Required]

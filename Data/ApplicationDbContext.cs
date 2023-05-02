@@ -15,5 +15,6 @@ namespace Smart_Invoice.Data
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<UtilityInvoice> UtilityInvoices { get; set; }
         public DbSet<Company> Companies { get; set; }
+
     }
 }

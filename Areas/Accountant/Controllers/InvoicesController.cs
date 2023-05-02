@@ -1,4 +1,4 @@
-﻿﻿using Google.Cloud.DocumentAI.V1;
+﻿using Google.Cloud.DocumentAI.V1;
 using Google.Cloud.Storage.V1;
 using Google.Cloud.Vision.V1;
 using Google.Protobuf;
@@ -68,7 +68,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address");
-
+            
 
             return View();
         }
@@ -82,7 +82,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             try
             {
-
+                
 
                 using (var stream = file.OpenReadStream())
                 {
@@ -123,26 +123,25 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 _logger.LogError(ex.Message);
             }
             return View();
-
-
+           
+           
         }
-
-
-
+  
+       
+ 
 
         // GET: Accountant/Invoices/Edit/5
         public async Task<IActionResult> Edit()
         {
             /*var response2 = TempData["model"] as string;
             var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
-            try
+            try { 
+            IParsedInvoice response;
+
+            using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
             {
-                IParsedInvoice response;
 
-                using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
-                {
-
-                    response = (IParsedInvoice)JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
+                    response = JsonConvert.DeserializeObject<UtilityInvoice>(reader.ReadToEnd());
             }
             byte[] imageBytes = HttpContext.Session.Get("image");
             string base64Image = Convert.ToBase64String(imageBytes);
@@ -152,9 +151,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
                     ViewBag.Company_License_Registration_Number = company.Company_License_Registration_Number;
                 }
-                return View(response);
-            }
-            catch (Exception ex)
+            return View(response);
+            }catch(Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return View();
@@ -168,7 +166,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(IFormCollection rawInvoice)
         {
-
+            
             if (!ModelState.IsValid)
             {
                 //TODO: Add Toastr Notifications
@@ -189,12 +187,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         if (property != null)
                         {
                             var value = rawInvoice[item].ToString();
-                            if (property.Name.Contains("Invoice_Amount") || property.Name.Contains("Invoice_VAT"))
+                            if(property.Name.Contains("Invoice_Amount") || property.Name.Contains("Invoice_VAT"))
                             {
                                 property.SetValue(invoice, Double.Parse(value));
                             }
-                            else
-                            {
+                            else { 
                                 property.SetValue(invoice, value.Normalize());
                             }
                         }
@@ -215,8 +212,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return RedirectToAction(nameof(Index));
                 //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }
-
-
+           
+           
         }
 
         // GET: Accountant/Invoices/Delete/5
@@ -252,14 +249,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 _context.Invoices.Remove(invoice);
             }
-
+            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool InvoiceExists(int id)
         {
-            return (_context.Invoices?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Invoices?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
         #region APICalls
@@ -292,7 +289,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
                     // Handle the exception and return an error response
                     _logger.LogTrace(StatusCodes.Status500InternalServerError, ex.Message);
-                    return false;
+                    return false ;
                 }
             }
             else
@@ -301,7 +298,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return false;
             }
         }
-        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice(IFormFile file)
+        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice (IFormFile file)
         {
             const string projectId = "document-ea-369818";
             const string locationId = "eu";
@@ -338,7 +335,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 var x = pageAnchor.TextSegments[0].StartIndex;
                 var y = document.Pages[0].Blocks;
 
-
+                
 
 
                 return document;
@@ -393,19 +390,19 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             return true;
-
+            
         }
 
         public async Task<string> CallOpenAi(string rawdocument)
         {
-
-            var prompt = "can you structure an invoice from this data as key-value pair in json : '" + rawdocument + "'";
+            
+            var prompt =  "can you structure an invoice from this data as key-value pair in json : '"+rawdocument+"'";
             var apiKey = _OpenAi;
             var model = "text-davinci-003";
 
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            var data = new { prompt = prompt, model = model, max_tokens = 1500 };
+            var data = new { prompt = prompt, model = model , max_tokens = 1500};
             var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
             var response = await client.PostAsync("https://api.openai.com/v1/completions", content);
 
@@ -423,7 +420,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             ImageAnnotatorClient client = ImageAnnotatorClient.Create();
             //Image image = Image.FromFile("./Modified Images/IMG_3205.jpg");
             TextAnnotation text = await client.DetectDocumentTextAsync(image);
-
+            
             return text.Text;
         }
         #endregion
