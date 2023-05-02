@@ -1,0 +1,29 @@
+﻿
+@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css);
+@import url(https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css);
+
+.uploader {
+    height: fit-content;
+    color: black;
+}
+.preview{
+    width:10%;
+}
+.hidden{
+    display:none;
+}
+.uploader label {
+    clear: both;
+    width: 100%;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    background: #fff;
+    border-radius: 7px;
+    border: 3px solid #eee;
+    transition: all .2s ease;
+    user-select: none;
+}
+    .uploader label:hover {
+        border: 3px solid #454cad;
+        box-shadow: inset 0 0 0 6px #eee;
+    }

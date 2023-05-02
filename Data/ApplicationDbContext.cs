@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Smart_Invoice.Models;
 
 namespace Smart_Invoice.Data
 {
