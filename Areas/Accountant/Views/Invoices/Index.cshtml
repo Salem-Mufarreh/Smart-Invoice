@@ -1,9 +1,24 @@
-﻿@using Smart_Invoice.Models.Invoices;
+﻿@using Newtonsoft.Json;
+@using Smart_Invoice.Models.Invoices;
+@using Smart_Invoice.Utility;
 @model IEnumerable<Invoice>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    if(TempData["Toastr"] != null)
+    {
+        
+        Toastr Error = JsonConvert.DeserializeObject<Toastr>(TempData["Toastr"].ToString());
+       
+        <script>
+            toastr["@Error.ToastType"]("@Error.ToastMessage");
+        </script>
+        
+        TempData["Toastr"] = null ;
+    }
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />

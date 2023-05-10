@@ -6,8 +6,11 @@
     <title>@ViewData["Title"] - Smart_Invoice</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    
+        <script src="/js/toastr.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.slim.min.js"></script>
 
 
@@ -38,7 +41,18 @@
                             <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Invoices">Add Invoice</a></li>
                             </ul>
                         </li>
-                          <li class="nav-item dropdown">
+                       
+                         <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
+                            Companies
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Companies">Company</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Companies">Add new Company</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
                             <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
                             Admin
                             </a>

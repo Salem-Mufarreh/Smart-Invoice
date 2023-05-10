@@ -29,7 +29,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LoginModel> _logger;
         private readonly string _OpenAi;
-
+        
         public InvoicesController(ApplicationDbContext context, ILogger<LoginModel> logger, IOptions<OpenAiSettings> settings)
         {
             _context = context;
@@ -42,6 +42,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             var applicationDbContext = _context.Invoices.Include(i=> i.CompanyID);
             List<Invoice> invoices = await applicationDbContext.ToListAsync<Invoice>();
+            
             return View(invoices);
         }
 
@@ -151,7 +152,26 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 if (Sresponse.Contains("items"))
                 {
                     viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
+                    var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
+                    if (invoiceID != null)
+                    {
+                        var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                        TempData["Toastr"] = JsonConvert.SerializeObject(Error);
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
+                else if (Sresponse.Contains("Meter_Number"))
+                {
+                    viewModel.UtilityInvoice = JsonConvert.DeserializeObject<UtilityInvoice>(Sresponse);
+                    var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.UtilityInvoice.Invoice_Number));
+                    if (invoiceID != null)
+                    {
+                        ViewBag.Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+
+                CheckInvoicePrices(viewModel);
                 byte[] imageBytes = HttpContext.Session.Get("image");
                 string base64Image = Convert.ToBase64String(imageBytes);
                 ViewBag.Base64Image = base64Image;
@@ -193,7 +213,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         if (property != null)
                         {
                             var value = rawInvoice[item].ToString();
-                            if(property.Name.Contains("Invoice_Amount") || property.Name.Contains("Invoice_VAT"))
+                            if(property.Name.Contains("Total") || property.Name.Contains("Tax")
+                                || property.Name.Contains("Subtotal"))
                             {
                                 property.SetValue(invoice, Double.Parse(value));
                             }
@@ -203,10 +224,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         }
                     }
                     var company = _context.Companies.Where(c => c.Company_Name.
-                    Contains(invoice.Company.Company_Name)).FirstOrDefault();
+                                Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
                     //TODO if company is null Create a new company 
                     invoice.Company = company;
+                    invoice.CompanyID = company;
                     invoice.Invoice_Id = Guid.NewGuid().ToString();
+                    invoice.Invoice_Type = SD.InvoiceUtility;
                     _context.Add(invoice);
                     await _context.SaveChangesAsync();
 
@@ -224,8 +247,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             if (property != null)
                             {
                                 var value = rawInvoice[item].ToString();
-                                if (property.Name.Contains("Invoice_Amount") || property.Name.Contains("Tax") 
-                                    || property.Name.Contains("Total") || property.Name.Contains("Subtotal"))
+                                if ( property.Name.Contains("Tax") || property.Name.Contains("Total")
+                                    || property.Name.Contains("Subtotal"))
                                 {
                                     property.SetValue(invoice, Double.Parse(value));
                                 }
@@ -478,6 +501,77 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             TextAnnotation text = await client.DetectDocumentTextAsync(image);
             
             return text.Text;
+        }
+
+        public Task<string> CheckInvoicePrices( InvoiceViewModel viewModel)
+        {
+            List<string> Valid = new List<string>();
+            List<string> inValid = new List<string>();
+            var company = _context.Companies.FirstOrDefault(c => c.Company_Name.Equals(viewModel.ProductInvoice.Company.Company_Name));
+            if (company != null)
+            {
+                Valid.Add("Company_Name");
+            }
+            else
+            {
+                inValid.Add("Company_Name");
+            }
+            if (viewModel == null)
+            {
+
+            }
+            else
+            {
+                if (viewModel.ProductInvoice != null)
+                {
+                    Product_Invoice product_ = viewModel.ProductInvoice;
+                    var total = product_.Total;
+                    if (total > 0)
+                    {
+                        Valid.Add("Total");
+                        var sum = 0.0;
+                        foreach (var item in product_.Items)
+                        {
+                            sum += item.Total;
+                        }
+                        if (product_.Tax != null || product_.Tax != 0.0)
+                        {
+                            if (sum + product_.Tax == total)
+                            {
+                                Valid.Add("Items");
+                                Valid.Add("Tax");
+                            }
+                            else
+                            {
+                                inValid.Add("Tax");
+                                inValid.Add("Items");
+                                ModelState.AddModelError("Items", "The sum of item prices does not match the ivoice total.");
+                            }
+                        }
+                        else
+                        {
+                            if (sum == total)
+                            {
+                                inValid.Add("Tax");
+                                Valid.Add("Items");
+                            }
+                            else
+                            {
+                                inValid.Add("Tax");
+                                inValid.Add("Items");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        inValid.Add("Total");
+                        ModelState.AddModelError("Total", "");
+                    }
+                }
+            }
+            ViewBag.Valid = Valid;
+            ViewBag.inValid = inValid;
+            return null;
         }
         #endregion
     }
