@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -28,6 +29,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                           Problem("Entity set 'ApplicationDbContext.Companies'  is null.");
         }
 
+        [HttpGet]
         // GET: Accountant/Companies/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -77,7 +79,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Companies.FindAsync(id);
+            var company = await _context.Companies.Include(a => a.person).FirstOrDefaultAsync(c => c.CompanyId.Equals(id));
             if (company == null)
             {
                 return NotFound();

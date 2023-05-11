@@ -1,4 +1,5 @@
 ﻿@model Smart_Invoice.Models.Company
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Edit";
@@ -11,43 +12,43 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" id="formEdit" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="CompanyId" />
+            <input type="hidden" asp-for="CompanyId" required/>
             <div class="form-group">
-                <label asp-for="Company_Name" class="control-label"></label>
-                <input asp-for="Company_Name" class="form-control" />
+                <label asp-for="Company_Name" class="control-label">Company Name Arabic*</label>
+                <input asp-for="Company_Name" class="form-control" required/>
                 <span asp-validation-for="Company_Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Company_Name_Normilized" class="control-label"></label>
-                <input asp-for="Company_Name_Normilized" class="form-control" />
-                <span asp-validation-for="Company_Name_Normilized" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company_Name_English" class="control-label"></label>
-                <input asp-for="Company_Name_English" class="form-control" />
+                <label asp-for="Company_Name_English" class="control-label"> Company Name English*</label>
+                <input asp-for="Company_Name_English" class="form-control" required/>
                 <span asp-validation-for="Company_Name_English" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
+                <label asp-for="Address" class="control-label">Address*</label>
+                <input asp-for="Address" class="form-control" required />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Company_License_Registration_Number" class="control-label"></label>
-                <input asp-for="Company_License_Registration_Number" class="form-control" />
+                <label asp-for="Company_License_Registration_Number" class="control-label"> Company License Registration Number*</label>
+                <input asp-for="Company_License_Registration_Number" class="form-control" required readonly/>
                 <span asp-validation-for="Company_License_Registration_Number" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Phone" class="control-label"></label>
-                <input asp-for="Phone" class="form-control" />
+                <input asp-for="Phone" class="form-control" required/>
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="person.Name" class="control-label">Contact Person Name</label>
+                <input asp-for="person.Name" class="form-control" required/>
+                <span asp-validation-for="person.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -59,4 +60,19 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
+<script>
+    var form = document.getElementById('formEdit')
+  form.addEventListener('submit', function(event){
+      if(!form.checkValidity()){
+          event.preventDefault()
+          event.stopPropagation()
+          form.classList.add("was-validated")
+
+      }
+      else{
+          form.submit();
+      }
+  })
+</script>
 
