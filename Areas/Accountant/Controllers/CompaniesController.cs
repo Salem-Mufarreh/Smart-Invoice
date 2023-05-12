@@ -38,7 +38,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Companies
+            var company = await _context.Companies.Include(c => c.person)
                 .FirstOrDefaultAsync(m => m.CompanyId == id);
             if (company == null)
             {
@@ -92,13 +92,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,Company_Name,Company_Name_Normilized,Company_Name_English,Address,Company_License_Registration_Number,Phone,Email")] Company company)
+        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,Company_Name,Company_Name_English,Address,Company_License_Registration_Number,Phone,Email,person")] Company company)
         {
             if (id != company.CompanyId)
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
                 try
@@ -163,5 +162,21 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
           return (_context.Companies?.Any(e => e.CompanyId == id)).GetValueOrDefault();
         }
+
+        #region API Calls
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPerson()
+        {
+            var Person = await _context.Contacts.ToListAsync();
+            if(Person == null)
+            {
+                return null;
+            }
+            return Json(new {data = Person});
+        }
+
+        #endregion
     }
+
 }
