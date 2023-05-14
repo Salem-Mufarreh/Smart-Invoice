@@ -1,0 +1,66 @@
+﻿@model Smart_Invoice.Models.Warehouse.Warehouse
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create</h1>
+
+<h4>Warehouse</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="WarehouseName" class="control-label"></label>
+                <input asp-for="WarehouseName" class="form-control" />
+                <span asp-validation-for="WarehouseName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="WarehouseCode" class="control-label"></label>
+                <input asp-for="WarehouseCode" class="form-control" />
+                <span asp-validation-for="WarehouseCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Capacity" class="control-label"></label>
+                <input asp-for="Capacity" class="form-control" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AvailableSpace" class="control-label"></label>
+                <input asp-for="AvailableSpace" class="form-control" />
+                <span asp-validation-for="AvailableSpace" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OccupancyRate" class="control-label"></label>
+                <input asp-for="OccupancyRate" class="form-control" />
+                <span asp-validation-for="OccupancyRate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+                <input asp-for="Status" class="form-control" />
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductId" class="control-label"></label>
+                <select asp-for="ProductId" class ="form-control" asp-items="ViewBag.ProductId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

@@ -1,0 +1,79 @@
+﻿@model IEnumerable<Smart_Invoice.Models.Warehouse.Warehouse>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.WarehouseName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.WarehouseCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Capacity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AvailableSpace)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OccupancyRate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.WarehouseName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.WarehouseCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Capacity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AvailableSpace)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OccupancyRate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.ProductId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.WarehouseId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.WarehouseId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.WarehouseId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
