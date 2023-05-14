@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Smart_Invoice.Models.Warehouse;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Smart_Invoice.Models.Stock
@@ -16,11 +17,12 @@ namespace Smart_Invoice.Models.Stock
         public int ProductCount { get; set; }
         [Required]
         [ForeignKey("WarehouseId")]
-        public int Warehouse { get; set; } // make foreign key
+        public int WarehouseId { get; set; } // make foreign key
         public DateTime? PurchaseDate { get; set; }
         public DateTime? LastUpdated { get; set; }
         [Required]
         public double? SellingPrice { get; set; }
         public string? Notes { get; set; }
+        public virtual Warehouse.Warehouse? Warehouse { get; set; }
     }
 }
