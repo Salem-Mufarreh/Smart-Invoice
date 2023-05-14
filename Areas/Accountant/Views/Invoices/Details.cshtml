@@ -1,5 +1,8 @@
 ﻿@using Smart_Invoice.Models.Invoices;
-@model Invoice
+@using Smart_Invoice.Utility;
+@model InvoiceViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
 
 @{
     ViewData["Title"] = "Details";
@@ -8,85 +11,151 @@
 
 <h1>Details</h1>
 
-@*<div>
+<div>
     <h4>Invoice</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Customer.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InvoiceNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InvoiceNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InvoiceDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InvoiceDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DueDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DueDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CurrencyCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CurrencyCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ExchangeRate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ExchangeRate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EffectiveDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EffectiveDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TaxPercentage)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TaxPercentage)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TaxTotal)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TaxTotal)
-        </dd>
-    </dl>
-</div>*@
+    <div class="card w-100 h-100" style="flex-wrap:wrap">
+        <div class="card-body">
+            <h4 class="card-title">Invoice</h4>
+            <hr />
+            @{if(Model.ProductInvoice != null){
+            <dl class="row">
+                
+                <dt class="col-sm-2">Company Name</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.ProductInvoice.Company.Company_Name_English)</dd>
+                <dt class="col-sm-2">Invoice Number</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model => model.ProductInvoice.Invoice_Number)</dd>
+
+                <dt class="col-sm-2">Company Registration #</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.ProductInvoice.Company.Company_License_Registration_Number)</dd>
+                <dt class="col-sm-2">Invoice Date</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model => model.ProductInvoice.Invoice_Date)</dd>
+
+                <dt class="col-sm-2">Company Address</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.ProductInvoice.Company.Address)</dd>
+                <dt class="col-sm-2">Invoice Currancy</dt>
+                <dd class="col-sm-2">USD</dd>
+                    </dl>
+            }
+            else if(Model.UtilityInvoice != null)
+            {
+                <dl class="row">
+                
+                <dt class="col-sm-2">Company Name</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.UtilityInvoice.Company.Company_Name_English)</dd>
+                <dt class="col-sm-2">Invoice Number</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model => model.UtilityInvoice.Invoice_Number)</dd>
+
+                <dt class="col-sm-2">Company Registration #</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.UtilityInvoice.Company.Company_License_Registration_Number)</dd>
+                <dt class="col-sm-2">Invoice Date</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model => model.UtilityInvoice.Invoice_Date)</dd>
+
+                <dt class="col-sm-2">Company Address</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.UtilityInvoice.Company.Address)</dd>
+                <dt class="col-sm-2">Invoice Currancy</dt>
+                <dd class="col-sm-2">USD</dd>
+
+                <dt class="col-sm-2">Meter Number</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.UtilityInvoice.Meter_Number)</dd>
+                <dt class="col-sm-2">Service Number</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model=> model.UtilityInvoice.Service_Number)</dd>
+                <dt class="col-sm-2">Current Reading</dt>
+                <dd class="col-sm-6">@Html.DisplayFor(model=> model.UtilityInvoice.Current_Reading)</dd>
+                <dt class="col-sm-2">Previous Reading Date</dt>
+                <dd class="col-sm-2">@Html.DisplayFor(model=> model.UtilityInvoice.Previous_Reading_Date)</dd>
+
+            </dl>
+            <hr />
+            <table class="table">
+                <thead class="card-header">
+                    <tr>
+                    <th></th>
+                       <th>Pervious Debt</th>
+                       <th>Tax</th>
+                       <th>SubTotal</th>
+                       <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <th></th>
+                        <th>@Model.UtilityInvoice.Previous_Debt</th>
+                        <th>@Model.UtilityInvoice.Tax</th>
+                        <th>@Model.UtilityInvoice.Subtotal</th>
+                        <th>@Model.UtilityInvoice.Total</th>
+                    </tr>
+                </tbody>
+            </table>
+                  
+            }
+            }
+            @{if(Model.ProductInvoice != null){
+                            <hr />
+
+                <table class="table">
+                <thead class="card-header">
+                    <tr>
+                        <th class="col-sm-1"></th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                   @{foreach (var item in Model.ProductInvoice.Items)
+                    {
+                        <tr>
+                            <th></th>
+                            <th>@item.Name</th>
+                            <th>@item.Unit</th>
+                            <th>@item.Quantity</th>
+                            <th>@item.UnitPrice</th>
+                            <th>@item.Total</th>
+                        </tr>
+                    }}
+                    <tr>
+                        <th colspan="4" style="border-bottom-width:0px"></th>
+                        <th>VAT</th>
+                        <th>@Model.ProductInvoice.Tax</th>
+                        
+                    </tr>
+                    <tr>
+                        <th colspan="4" style="border-bottom-width:0px"></th>
+                        <th>SubTotal</th>
+                        <th>@Model.ProductInvoice.Subtotal</th>
+                        
+                    </tr>
+                    <tr>
+                        <th colspan="4" style="border-bottom-width:0px"></th>
+                        <th>Total</th>
+                        <th>@Model.ProductInvoice.Total</th>
+                        
+                    </tr>
+                </tbody>
+            </table>
+            }
+            }
+           
+        </div>
+    </div>
+</div>
+<br />
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @{
+        if(Model.ProductInvoice != null)
+        {
+            <a asp-action="Edit" asp-route-id="@Model?.ProductInvoice.Id">Edit</a>
+        
+
+        }
+        else if(Model.UtilityInvoice != null)
+        {
+                <a asp-action="Edit" asp-route-id="@Model?.UtilityInvoice.Id">Edit</a> 
+
+        }
+    }
+    |<a asp-action="Index">Back to List</a>
 </div>

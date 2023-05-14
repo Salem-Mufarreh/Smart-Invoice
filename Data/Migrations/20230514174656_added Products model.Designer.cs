@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230514174656_added Products model")]
+    partial class addedProductsmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -482,90 +484,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Stock.Inventory", b =>
-                {
-                    b.Property<int>("InventoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryId"), 1L, 1);
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PurchaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SKU")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("SellingPrice")
-                        .IsRequired()
-                        .HasColumnType("float");
-
-                    b.Property<int>("Warehouse")
-                        .HasColumnType("int");
-
-                    b.HasKey("InventoryId");
-
-                    b.ToTable("Inventories");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
-                {
-                    b.Property<int>("WarehouseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WarehouseId"), 1L, 1);
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("AvailableSpace")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Capacity")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<double?>("OccupancyRate")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WarehouseCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WarehouseName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("WarehouseId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Warehouses");
+                    b.ToTable("products");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
@@ -688,15 +607,6 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ProductInvoice");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
-                {
-                    b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>

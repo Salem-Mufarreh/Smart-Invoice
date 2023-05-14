@@ -57,12 +57,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             var invoice = await _context.Invoices
                 .Include(i => i.Company)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            InvoiceViewModel invoiceViewModel = new InvoiceViewModel();
+
+            if (invoice is Product_Invoice product_Invoice)
+            {
+                invoice = await _context.ProductInvoices.Include(d=>d.Items).FirstOrDefaultAsync(m=> m.Id.Equals(id));
+                invoiceViewModel.ProductInvoice = (Product_Invoice)invoice;
+            }
+            else if(invoice is UtilityInvoice utility)
+            {
+                invoice = await _context.UtilityInvoices.FirstOrDefaultAsync(m => m.Id == id);
+                invoiceViewModel.UtilityInvoice = (UtilityInvoice)invoice;
+            }
             if (invoice == null)
             {
                 return NotFound();
             }
 
-            return View(invoice);
+            return View(invoiceViewModel);
         }
         [HttpGet]
         // GET: Accountant/Invoices/Create
@@ -171,7 +183,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     }
                 }
 
-                CheckInvoicePrices(viewModel);
+                //CheckInvoicePrices(viewModel);
                 byte[] imageBytes = HttpContext.Session.Get("image");
                 string base64Image = Convert.ToBase64String(imageBytes);
                 ViewBag.Base64Image = base64Image;
@@ -223,14 +235,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             }
                         }
                     }
-                    var company = _context.Companies.Where(c => c.Company_Name.
+                    var company = _context.Companies.Where(c => c.Company_Name_English.
                                 Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
                     //TODO if company is null Create a new company 
                     invoice.Company = company;
                     invoice.CompanyID = company;
                     invoice.Invoice_Id = Guid.NewGuid().ToString();
                     invoice.Invoice_Type = SD.InvoiceUtility;
-                    _context.Add(invoice);
+                    _context.UtilityInvoices.Add(invoice);
                     await _context.SaveChangesAsync();
 
                 }
@@ -280,7 +292,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         invoice.Invoice_Id = Guid.NewGuid().ToString();
                         invoice.Invoice_Type = SD.InvoiceProduct;
                         invoice.CompanyID = company;
-                        _context.Add(invoice);
+                        _context.ProductInvoices.Add(invoice);
                         await _context.SaveChangesAsync();
                     }
                 }
@@ -573,6 +585,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             ViewBag.inValid = inValid;
             return null;
         }
-        #endregion
+       
+#endregion
     }
 }

@@ -5,12 +5,9 @@ namespace Smart_Invoice.Models.Invoices
 {
     public class InvoiceItem
     {
-        [Key]
-        public int id { get; set; }
+        
         public int? InvoiceItemId { get; set; }
-        [Required]
-        [ForeignKey("Id")]
-        public Invoice? InvoiceId { get; set; }
+        
         [Required]
         public string? Name { get; set; }
         [Required]
@@ -22,6 +19,8 @@ namespace Smart_Invoice.Models.Invoices
         public double Total { get; set; }
 
 
-
+        public int ProductInvoiceId { get; set; }
+        [ForeignKey("ProductInvoiceId")]
+        public virtual Product_Invoice ProductInvoice { get; set; }
     }
 }

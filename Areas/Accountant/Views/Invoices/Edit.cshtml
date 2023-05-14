@@ -107,6 +107,10 @@
                 <label>Invoice Total</label>
                 </div>
             }
+            else
+            {
+                <p>sad</p>
+            }
             <p id="demo"></p>
             
 
@@ -208,6 +212,7 @@
 </div>
 <script>
     @{
+        if(ViewBag.Valid != null){
         var valid = ViewBag.Valid;
         foreach (var item in valid)
         {
@@ -269,6 +274,7 @@
             }
 
         }
+    }
     }
 </script>
 @*
