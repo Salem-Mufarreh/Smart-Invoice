@@ -23,5 +23,6 @@ namespace Smart_Invoice.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Warehouse>Warehouses { get; set; }
+        public DbSet<WarehouseProduct> WarehouseProducts { get; set;}
     }
 }

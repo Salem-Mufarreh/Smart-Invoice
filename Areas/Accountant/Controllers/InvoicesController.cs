@@ -6,20 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using Smart_Invoice.Areas.Identity.Pages.Account;
 using Smart_Invoice.Data;
+using Smart_Invoice.Models.Invoices;
+using Smart_Invoice.Models.Products;
+using Smart_Invoice.Utility;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
 using System.Text;
 using Image = Google.Cloud.Vision.V1.Image;
-using System.Drawing.Imaging;
-using Microsoft.Extensions.Options;
-using Smart_Invoice.Utility;
-using System.Dynamic;
-using System.Text.Json;
-using System.Linq;
-using Smart_Invoice.Models.Invoices;
+using Product = Smart_Invoice.Models.Products.Product;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -139,9 +140,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
            
            
         }
-  
+
        
- 
 
         // GET: Accountant/Invoices/Edit/5
         public async Task<IActionResult> Edit()
@@ -160,10 +160,15 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
                 }
                 InvoiceViewModel viewModel = new InvoiceViewModel();
-
-                if (Sresponse.Contains("items"))
+                
+                if (Sresponse.ToLower().Contains("items"))
                 {
                     viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
+                    if (! await CheckCompany(viewModel.ProductInvoice.Company.Company_Name_English)) {//name in english is null 
+                        HttpContext.Session.SetString("NextView", "Edit");
+                        TempData["viewModel"] = JsonConvert.SerializeObject(viewModel);
+                        return RedirectToAction("Create","Companies");
+                    }
                     var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
                     if (invoiceID != null)
                     {
@@ -171,19 +176,19 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         TempData["Toastr"] = JsonConvert.SerializeObject(Error);
                         return RedirectToAction(nameof(Index));
                     }
+                    var result = CheckItems(viewModel.ProductInvoice);
                 }
-                else if (Sresponse.Contains("Meter_Number"))
+                else if (Sresponse.ToLower().Contains("meter_number"))
                 {
                     viewModel.UtilityInvoice = JsonConvert.DeserializeObject<UtilityInvoice>(Sresponse);
                     var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.UtilityInvoice.Invoice_Number));
                     if (invoiceID != null)
                     {
-                        ViewBag.Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                        var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                        TempData["Toastr"] = JsonConvert.SerializeObject(Error);
                         return RedirectToAction(nameof(Index));
                     }
                 }
-
-                //CheckInvoicePrices(viewModel);
                 byte[] imageBytes = HttpContext.Session.Get("image");
                 string base64Image = Convert.ToBase64String(imageBytes);
                 ViewBag.Base64Image = base64Image;
@@ -237,6 +242,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     }
                     var company = _context.Companies.Where(c => c.Company_Name_English.
                                 Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
+
                     //TODO if company is null Create a new company 
                     invoice.Company = company;
                     invoice.CompanyID = company;
@@ -439,50 +445,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return null;
         }
 
-        /* this function will recive the file from html form and save to temp location,
-         * it will read the file from the temp location and transform the pixels to 
-         * grayscale color to reduce any noise and focuse more on the fonts.
-         * Document Ai already have pre-processing for images*/
-        public async Task<Boolean> ApplyFilter(IFormFile file)
-        {
-            try
-            {
-
-                var uploadpath = Path.Combine(Path.GetTempPath(), "Uploaded Files", file.FileName);
-                using (var stream = new FileStream(uploadpath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-                Bitmap bitmap = new Bitmap(uploadpath);
-                Color p;
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    for (int y = 0; y < bitmap.Height; y++)
-                    {
-                        p = bitmap.GetPixel(x, y);
-                        int a = (int)p.A;
-                        int b = (int)p.B;
-                        int r = (int)p.R;
-                        int g = (int)p.G;
-
-                        int avg = (r + g + b) / 3;
-                        bitmap.SetPixel(x, y, Color.FromArgb(avg, avg, avg));
-
-                    }
-                }
-                var uploadpath2 = Path.Combine(Directory.GetCurrentDirectory(), "Uploaded Files", file.FileName);
-                bitmap.Save(uploadpath2);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-
-            return true;
-            
-        }
+        
 
         public async Task<string> CallOpenAi(string rawdocument)
         {
@@ -586,6 +549,154 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return null;
         }
        
-#endregion
+        public async Task<Boolean> CheckCompany(string companyName)
+        {
+            if (!string.IsNullOrEmpty(companyName))
+            {
+                var company =await _context.Companies.Where(c=> c.Company_Name_English.ToLower().Equals(companyName.ToLower())).FirstOrDefaultAsync();
+                if (company != null)
+                {
+                    return true;
+                }
+               
+            }
+            
+                return false;
+            
+        }
+
+        public async Task<(List<Product> Valid, List<string> InValid, List<string> potentialMatches)> CheckItems(Smart_Invoice.Models.Invoices.Product_Invoice Invoices) 
+        {
+            List<string> InValid = new List<string>();
+            List<Product> Valid = new List<Product>();
+            List<string> potentialMatches = new List<string>();
+            if (Invoices != null && Invoices.Items != null )
+            {
+                List<string> items = Invoices.Items.Select(n => n.Name).ToList();
+                int batchSize = 10;
+                var batches = Enumerable.Range(0, (items.Count + batchSize - 1) / batchSize)
+                        .Select(i => items.Skip(i * batchSize).Take(batchSize));
+
+                foreach (var batch in batches)
+                {
+                    var products = _context.Products
+                          .Where(p => batch.Contains(p.Name))
+                          .ToList();
+                    try {
+                        // Add existing product names to the existingProductNames list
+                        Valid.AddRange(products);
+
+                        // Add non-existing product names to the nonExistingProductNames list
+                        InValid.AddRange(batch.Except(products.Select(p => p.Name)));
+                    }
+                    catch (Exception ex)
+                    {
+                        var e = ex;
+                    }
+                }
+                HashSet<string> uniqueMatches = new HashSet<string>();
+                List<string> potentialMatchesTrial = new List<string>();
+
+                foreach (string nonExistingProductName in InValid)
+                {
+                    //problem if it found a match for one product and not the others what should it do 
+                    //TODO: make a new list and if there was a match in the search remove it from the original list and add it to the found list 
+                    // so the non exisiting products that wasn't found can be researched 
+
+                    SearchCritira(nonExistingProductName, potentialMatchesTrial);
+                    
+                    
+                }
+                uniqueMatches.AddRange(potentialMatchesTrial);
+                potentialMatchesTrial = uniqueMatches.ToList();
+                if (potentialMatchesTrial.Count > 0)
+                {
+                    if (potentialMatchesTrial.Count == 1)
+                    {
+                        return (Valid, InValid, potentialMatches);
+
+                    }
+                    else
+                    {
+                        //TODO: call GPT to find the best match
+                    }
+                }
+                else
+                {
+                    foreach (string nonExistingProductName in InValid)
+                    {
+
+
+                        var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= 30).ToList();
+
+                        var matches = _context.Products
+                                               .AsEnumerable()
+                                               .Where(p => CalculateLevenshteinDistance(nonExistingProductName, p.Name) <= 30).Select(p => p.Name)
+                                               .ToList();
+
+                        potentialMatches.AddRange(matches);
+                    }
+                }
+                return (Valid, InValid, potentialMatches);
+            }
+            return (null,null,null);
+            
+        }
+        public int CalculateLevenshteinDistance(string source, string target)
+        {
+            int[,] dp = new int[source.Length + 1, target.Length + 1];
+
+            for (int i = 0; i <= source.Length; i++)
+                dp[i, 0] = i;
+
+            for (int j = 0; j <= target.Length; j++)
+                dp[0, j] = j;
+
+            for (int i = 1; i <= source.Length; i++)
+            {
+                for (int j = 1; j <= target.Length; j++)
+                {
+                    int cost = (source[i - 1] == target[j - 1]) ? 0 : 1;
+
+                    dp[i, j] = Math.Min(
+                        dp[i - 1, j] + 1,
+                        Math.Min(
+                            dp[i, j - 1] + 1,
+                            dp[i - 1, j - 1] + cost
+                        )
+                    );
+                }
+            }
+
+            return dp[source.Length, target.Length];
+        }
+        public void SearchCritira(string nonExistingProductName, List<string> potentialMatchesTrial)
+        {
+            var x = _context.Products.Where(p => p.Name.ToLower().Contains(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
+            if (x.Count != 0)
+            {
+                potentialMatchesTrial.AddRange(x);
+            }
+            else
+            {
+                var y = _context.Products.Where(p => p.Name.ToLower().StartsWith(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
+                if (y.Count != 0)
+                {
+                    potentialMatchesTrial.AddRange(y);
+                }
+                else
+                {
+                    var z = _context.Products.Where(p => p.Name.ToLower().EndsWith(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
+                    if (z.Count != 0)
+                    {
+                        potentialMatchesTrial.AddRange(z);
+                    }
+                }
+            }
+
+        }
+        
+
+        #endregion
     }
 }

@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Smart_Invoice.Models.Invoices;
+using Newtonsoft.Json;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -51,8 +53,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Companies/Create
         public IActionResult Create()
         {
-           
-            return View();
+            ViewData["WarehouseId"] = new SelectList(_context.Contacts, "ContactPersonId", "Name");
+            Company company = new Company();
+            // TODO
+            InvoiceViewModel invoiceViewModel = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
+            Product_Invoice product = invoiceViewModel.ProductInvoice;
+            if(product != null)
+            {
+                company = product.Company;
+            }
+            return View(company);
         }
 
         // POST: Accountant/Companies/Create
@@ -60,12 +70,29 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyId,Company_Name,Company_Name_Normilized,Company_Name_English,Address,Company_License_Registration_Number,Phone,Email")] Company company)
-        {
+        public async Task<IActionResult> Create([Bind("CompanyId,Company_Name,Company_Name_Normilized,Company_Name_English,Address,Company_License_Registration_Number,Phone,Email,person")] Company company)
+        {   
+            var contact = _context.Contacts.Where(x => x.ContactPersonId.Equals(company.person.ContactPersonId)).FirstOrDefault();
+            company.person = contact;
+            ModelState.Clear();
+            TryValidateModel(company);
             if (ModelState.IsValid)
             {
                 _context.Add(company);
                 await _context.SaveChangesAsync();
+                var nextView = HttpContext.Session.GetString("NextView");
+                if (nextView != null)
+                {
+                    try
+                    {
+                        HttpContext.Session.Remove("NextView");
+                        return RedirectToAction("Edit", "Invoices");
+                    }
+                    catch (Exception e)
+                    {
+                        
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(company);

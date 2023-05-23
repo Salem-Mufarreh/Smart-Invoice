@@ -13,7 +13,7 @@ namespace Smart_Invoice.Models.Products
         public double? Price { get; set; }
         public double? CostPrice {  get; set; }
         public int? CategoryId { get; set;}
-        public int? SKU { get; set; } // barcode, item coce ,....
+        public string? SKU { get; set; } // barcode, item coce ,....
         public string? ImageUrl { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

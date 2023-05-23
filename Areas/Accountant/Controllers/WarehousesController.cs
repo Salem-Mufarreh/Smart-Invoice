@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models.Warehouse;
+using Smart_Invoice.Utility;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -23,7 +24,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Warehouses
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Warehouses.Include(w => w.Product);
+            var applicationDbContext = _context.Warehouses.Include(w => w.WarehouseProducts);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -36,7 +37,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             var warehouse = await _context.Warehouses
-                .Include(w => w.Product)
+                .Include(w => w.WarehouseProducts)
                 .FirstOrDefaultAsync(m => m.WarehouseId == id);
             if (warehouse == null)
             {
@@ -49,7 +50,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Warehouses/Create
         public IActionResult Create()
         {
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "ProductId");
+            var warehouse = _context.Warehouses.OrderByDescending(w => w.WarehouseCode).FirstOrDefault();
+            if (warehouse != null && warehouse.WarehouseCode != null)
+            {
+                int wCode = int.Parse(warehouse.WarehouseCode.ToString());
+                int nextCode = wCode + 1;
+                ViewBag.WarehouseCode = nextCode.ToString("D3");
+            }
             return View();
         }
 
@@ -58,15 +65,27 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("WarehouseId,WarehouseName,WarehouseCode,Address,Capacity,AvailableSpace,OccupancyRate,Status,ProductId")] Warehouse warehouse)
+        public async Task<IActionResult> Create([Bind("WarehouseId,WarehouseName,WarehouseCode,Address,Capacity")] Warehouse warehouse)
         {
             if (ModelState.IsValid)
             {
+                warehouse.Status = SD.WarehouseActive;
+                warehouse.AvailableSpace = warehouse.Capacity;
+                warehouse.OccupancyRate = 0;
                 _context.Add(warehouse);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "ProductId", warehouse.ProductId);
+            else
+            {
+                var Wwarehouse = _context.Warehouses.OrderByDescending(w => w.WarehouseCode).FirstOrDefault();
+                if (Wwarehouse != null && Wwarehouse.WarehouseCode != null)
+                {
+                    int wCode = int.Parse(Wwarehouse.WarehouseCode.ToString());
+                    int nextCode = wCode + 1;
+                    ViewBag.WarehouseCode = nextCode.ToString("D3");
+                }
+            }
             return View(warehouse);
         }
 
@@ -83,7 +102,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 return NotFound();
             }
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "ProductId", warehouse.ProductId);
+            
             return View(warehouse);
         }
 
@@ -92,7 +111,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("WarehouseId,WarehouseName,WarehouseCode,Address,Capacity,AvailableSpace,OccupancyRate,Status,ProductId")] Warehouse warehouse)
+        public async Task<IActionResult> Edit(int id, [Bind("WarehouseId,WarehouseName,WarehouseCode,Address,Capacity,Status")] Warehouse warehouse)
         {
             if (id != warehouse.WarehouseId)
             {
@@ -103,7 +122,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 try
                 {
-                    _context.Update(warehouse);
+                    var oldWarehouse = await _context.Warehouses.FindAsync(id);
+                    if (oldWarehouse != null)
+                    {
+                        oldWarehouse.WarehouseName = warehouse.WarehouseName ?? oldWarehouse.WarehouseName;
+                        oldWarehouse.OccupancyRate = warehouse.OccupancyRate ?? oldWarehouse.OccupancyRate;
+                        oldWarehouse.Address = warehouse.Address ?? oldWarehouse.Address;
+                        oldWarehouse.Capacity = warehouse.Capacity ?? oldWarehouse.Capacity;
+                        oldWarehouse.Status = warehouse.Status ?? oldWarehouse.Status;
+                        _context.Update(oldWarehouse);
+
+                    }
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -119,7 +148,6 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "ProductId", warehouse.ProductId);
             return View(warehouse);
         }
 
@@ -132,7 +160,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             var warehouse = await _context.Warehouses
-                .Include(w => w.Product)
+                .Include(w => w.WarehouseProducts)
                 .FirstOrDefaultAsync(m => m.WarehouseId == id);
             if (warehouse == null)
             {

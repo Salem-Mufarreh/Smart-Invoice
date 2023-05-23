@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230515085252_ fixed the SKU in Product")]
+    partial class fixedtheSKUinProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,10 +251,11 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Company_Name_Normilized")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContactPersonId")
+                    b.Property<int>("ContactPersonId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -538,6 +541,7 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("AvailableSpace")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int?>("Capacity")
@@ -546,6 +550,9 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.Property<double?>("OccupancyRate")
                         .HasColumnType("float");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -560,30 +567,9 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("WarehouseId");
 
-                    b.ToTable("Warehouses");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.WarehouseProduct", b =>
-                {
-                    b.Property<int>("WarehouseProductId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WarehouseProductId"), 1L, 1);
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WarehouseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("WarehouseProductId");
-
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("WarehouseId");
-
-                    b.ToTable("WarehouseProducts");
+                    b.ToTable("Warehouses");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
@@ -673,7 +659,9 @@ namespace Smart_Invoice.Data.Migrations
                 {
                     b.HasOne("Smart_Invoice.Models.ContactPerson", "person")
                         .WithMany()
-                        .HasForeignKey("ContactPersonId");
+                        .HasForeignKey("ContactPersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("person");
                 });
@@ -717,23 +705,13 @@ namespace Smart_Invoice.Data.Migrations
                     b.Navigation("Warehouse");
                 });
 
-            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.WarehouseProduct", b =>
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
                 {
                     b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Smart_Invoice.Models.Warehouse.Warehouse", "Warehouse")
-                        .WithMany("WarehouseProducts")
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
@@ -754,11 +732,6 @@ namespace Smart_Invoice.Data.Migrations
                         .HasForeignKey("Smart_Invoice.Models.Invoices.UtilityInvoice", "Id")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
-                {
-                    b.Navigation("WarehouseProducts");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>

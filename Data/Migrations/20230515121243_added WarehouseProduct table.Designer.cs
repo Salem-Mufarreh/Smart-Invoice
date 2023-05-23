@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230515121243_added WarehouseProduct table")]
+    partial class addedWarehouseProducttable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,10 +251,11 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Company_Name_Normilized")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ContactPersonId")
+                    b.Property<int>("ContactPersonId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -538,6 +541,7 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("AvailableSpace")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int?>("Capacity")
@@ -673,7 +677,9 @@ namespace Smart_Invoice.Data.Migrations
                 {
                     b.HasOne("Smart_Invoice.Models.ContactPerson", "person")
                         .WithMany()
-                        .HasForeignKey("ContactPersonId");
+                        .HasForeignKey("ContactPersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("person");
                 });

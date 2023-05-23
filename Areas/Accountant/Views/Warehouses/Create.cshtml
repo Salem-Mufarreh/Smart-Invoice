@@ -21,7 +21,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="WarehouseCode" class="control-label"></label>
-                <input asp-for="WarehouseCode" class="form-control" />
+                <input asp-for="WarehouseCode" class="form-control" value="@ViewBag.WarehouseCode" readonly/>
                 <span asp-validation-for="WarehouseCode" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -34,25 +34,23 @@
                 <input asp-for="Capacity" class="form-control" />
                 <span asp-validation-for="Capacity" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
                 <label asp-for="AvailableSpace" class="control-label"></label>
                 <input asp-for="AvailableSpace" class="form-control" />
                 <span asp-validation-for="AvailableSpace" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            @*<div class="form-group">
                 <label asp-for="OccupancyRate" class="control-label"></label>
                 <input asp-for="OccupancyRate" class="form-control" />
                 <span asp-validation-for="OccupancyRate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+            </div>*@
+            @*<div class="form-group">
                 <label asp-for="Status" class="control-label"></label>
                 <input asp-for="Status" class="form-control" />
                 <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProductId" class="control-label"></label>
-                <select asp-for="ProductId" class ="form-control" asp-items="ViewBag.ProductId"></select>
-            </div>
+            </div>*@
+            
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

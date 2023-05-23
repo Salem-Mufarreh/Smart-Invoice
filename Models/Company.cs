@@ -16,9 +16,8 @@ namespace Smart_Invoice.Models
         public string? Company_License_Registration_Number { get; set; }
         [Required]
         public string? Phone { get; set; }
-        [Required]
         public string? Email { get; set; }
         [ForeignKey("ContactPersonId")]
-        public ContactPerson person { get; set;}
+        public ContactPerson? person { get; set;}
     }
 }

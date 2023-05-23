@@ -16,12 +16,13 @@ namespace Smart_Invoice.Models.Warehouse
         public string? Address { get; set; }
         [Required]
         public int? Capacity { get; set; }
-        [Required]
         public int? AvailableSpace { get; set; }
         public double? OccupancyRate { get;set; }
         public string? Status { get; set; }
-        [ForeignKey("ProductId")]
-        public int? ProductId { get; set; }
-        public virtual Product? Product { get; set; }
+
+        public virtual ICollection<WarehouseProduct>? WarehouseProducts { get; set; }
+
+
+
     }
 }

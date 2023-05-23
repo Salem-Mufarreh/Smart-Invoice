@@ -1,4 +1,5 @@
 ﻿@model Smart_Invoice.Models.Company
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Create";
@@ -11,7 +12,7 @@
 <hr />
 <div class="row">
     <div>
-        <form asp-action="Create" id="formCreate" class="needs-validation" novalidate>
+        <form asp-action="Create" method="post" asp-controller="Companies" id="formCreate" class="needs-validation" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="row">
         <div class="col-md-6">
@@ -50,24 +51,8 @@
     <div class="col-md-6">
         <h2>Verified Contact Person</h2>
         <div class="form-group">
-            <label asp-for="Person_Name" class="control-label">Full Name*</label>
-            <input asp-for="Person_Name" class="form-control" required/>
-            <span asp-validation-for="Person_Name" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Person_Position" class="control-label">Position*</label>
-            <input asp-for="Person_Position" class="form-control" required/>
-            <span asp-validation-for="Person_Position" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Person_Email" class="control-label">Contact Email</label>
-            <input asp-for="Person_Email" class="form-control" required/>
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-            <div class="form-group">
-            <label asp-for="Phone_Number" class="control-label">Contact Phone Number</label>
-            <input asp-for="Phone_Number" class="form-control" required />
-            <span asp-validation-for="Phone_Number" class="text-danger"></span>
+                <label asp-for="person" class="control-label"></label>
+                <select asp-for="person.ContactPersonId" class ="form-control" asp-items="ViewBag.WarehouseId"></select>
             </div>
     </div>
 </div>

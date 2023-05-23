@@ -52,7 +52,10 @@
         public const string ToastError = "error";
         public const string ToastSuccess = "success";
 
-
+        /* WareHouse */
+        public const string WarehouseActive = "Active";
+        public const string WarehouseInActive = "InActive";
+        public const string WarehouseMaintenance = "Maintenance";
 
     }
 }
