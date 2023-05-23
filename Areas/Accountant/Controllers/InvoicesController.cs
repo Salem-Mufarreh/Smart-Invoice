@@ -603,7 +603,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     //TODO: make a new list and if there was a match in the search remove it from the original list and add it to the found list 
                     // so the non exisiting products that wasn't found can be researched 
 
-                    SearchCritira(nonExistingProductName, potentialMatchesTrial);
+                    SearchCritira(nonExistingProductName, potentialMatchesTrial, InValid);
                     
                     
                 }
@@ -611,37 +611,56 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 potentialMatchesTrial = uniqueMatches.ToList();
                 if (potentialMatchesTrial.Count > 0)
                 {
-                    if (potentialMatchesTrial.Count == 1)
+                    if (InValid.Count == 0)
                     {
+                        /*found all the invalid products*/
                         return (Valid, InValid, potentialMatches);
 
                     }
                     else
                     {
-                        //TODO: call GPT to find the best match
+                        /* found some products not all */
+                        foreach (string nonExistingProductName in InValid)
+                        {
+                            List<string> matches;
+                            matches =  SearchByThreshold(30, nonExistingProductName, potentialMatchesTrial);
+                            if (matches.Count == 0)
+                            {
+                                matches = SearchByThreshold(45, nonExistingProductName, potentialMatchesTrial);
+                            }
+                            potentialMatchesTrial.AddRange(matches);
+                        }
+                        uniqueMatches.AddRange(potentialMatchesTrial);
+                        potentialMatchesTrial = uniqueMatches.ToList();
+                        /* TODO: Call GPT to return each product and its possible name if not equal should return null */
+
+                        
                     }
                 }
                 else
                 {
+                    /* Couldn't find any product form the search critira search all the database should be an extreem method */
                     foreach (string nonExistingProductName in InValid)
                     {
-
-
-                        var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= 30).ToList();
-
-                        var matches = _context.Products
-                                               .AsEnumerable()
-                                               .Where(p => CalculateLevenshteinDistance(nonExistingProductName, p.Name) <= 30).Select(p => p.Name)
-                                               .ToList();
-
-                        potentialMatches.AddRange(matches);
+                        List<string> matches;
+                        matches = SearchByThreshold(20, nonExistingProductName, potentialMatchesTrial);
+                        if (matches.Count == 0)
+                        {
+                            matches = SearchByThreshold(30, nonExistingProductName, potentialMatchesTrial);
+                        }
+                        potentialMatchesTrial.AddRange(matches);
                     }
+                    uniqueMatches.AddRange(potentialMatchesTrial);
+                    potentialMatchesTrial = uniqueMatches.ToList();
+                    /* TODO: Call GPT to return each product and its possible name if not equal should return null */
+
                 }
                 return (Valid, InValid, potentialMatches);
             }
-            return (null,null,null);
+            return (Valid, InValid, potentialMatches);
             
         }
+        /* calculate the levenshtein Distance for two strings */
         public int CalculateLevenshteinDistance(string source, string target)
         {
             int[,] dp = new int[source.Length + 1, target.Length + 1];
@@ -670,12 +689,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
             return dp[source.Length, target.Length];
         }
-        public void SearchCritira(string nonExistingProductName, List<string> potentialMatchesTrial)
+        /* this method will search the database using the three SQL methods contains(),startsWith(),endsWith() to ensure that the database contains the product
+         * so we don't have to search the entire databse nut only a subset the smaller it gets the better 
+         */
+        public void SearchCritira(string nonExistingProductName, List<string> potentialMatchesTrial , List<string> InValid)
         {
             var x = _context.Products.Where(p => p.Name.ToLower().Contains(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
             if (x.Count != 0)
             {
                 potentialMatchesTrial.AddRange(x);
+                InValid.Remove(nonExistingProductName);
             }
             else
             {
@@ -683,6 +706,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 if (y.Count != 0)
                 {
                     potentialMatchesTrial.AddRange(y);
+                    InValid.Remove(nonExistingProductName);
+
                 }
                 else
                 {
@@ -690,10 +715,23 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     if (z.Count != 0)
                     {
                         potentialMatchesTrial.AddRange(z);
+                        InValid.Remove(nonExistingProductName);
+
                     }
                 }
             }
 
+        }
+        /* this function will search the entire database and calculate the Levenshtein Distance and return the matches using the threshold */
+        public List<string> SearchByThreshold(int threshold, string nonExistingProductName, List<string> potentialMatchesTrial)
+        {
+            var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= 30).ToList();
+
+            var matches = _context.Products
+                                   .AsEnumerable()
+                                   .Where(p => CalculateLevenshteinDistance(nonExistingProductName, p.Name) <= threshold).Select(p => p.Name)
+                                   .ToList();
+            return matches;
         }
         
 
