@@ -176,7 +176,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         TempData["Toastr"] = JsonConvert.SerializeObject(Error);
                         return RedirectToAction(nameof(Index));
                     }
-                    var result = CheckItems(viewModel.ProductInvoice);
+                    var result = await CheckItems(viewModel.ProductInvoice);
+                    viewModel.ProductMatches.AddRange(result);
                 }
                 else if (Sresponse.ToLower().Contains("meter_number"))
                 {
@@ -468,6 +469,29 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return text;
 
         }
+        public async Task<string> GPTCValidateItems(List<string>potentialMatches, List<string> products)
+        {
+            var productsString = string.Join(", ", products);
+            var potentialMatchesString = string.Join(", ", potentialMatches);
+            var prompt = SD.CheckForItemsPrompt + " products from invoice:[ " + productsString+
+                "] potential match from database: [" + potentialMatchesString +"] " + SD.CheckForItemsPromptC ;
+            var apiKey = _OpenAi;
+            var model = "text-davinci-003";
+
+            /* building the equest */
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            var data = new { prompt = prompt, model = model, max_tokens = 1500 };
+            var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("https://api.openai.com/v1/completions", content);
+
+            /* response */
+            var responseString = await response.Content.ReadAsStringAsync();
+            var jsonObject = JObject.Parse(responseString);
+            var choices = jsonObject["choices"].First;
+            var text = choices["text"].ToString();
+            return text;
+        }
 
         public async Task<string> VisionExtract(Image image)
         {
@@ -565,11 +589,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             
         }
 
-        public async Task<(List<Product> Valid, List<string> InValid, List<string> potentialMatches)> CheckItems(Smart_Invoice.Models.Invoices.Product_Invoice Invoices) 
+        public async Task< List<ProductMatches> > CheckItems(Smart_Invoice.Models.Invoices.Product_Invoice Invoices) 
         {
             List<string> InValid = new List<string>();
             List<Product> Valid = new List<Product>();
-            List<string> potentialMatches = new List<string>();
             if (Invoices != null && Invoices.Items != null )
             {
                 List<string> items = Invoices.Items.Select(n => n.Name).ToList();
@@ -596,46 +619,71 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 HashSet<string> uniqueMatches = new HashSet<string>();
                 List<string> potentialMatchesTrial = new List<string>();
+                List<string>toBeRemovedFromInValid = new List<string>();
 
                 foreach (string nonExistingProductName in InValid)
                 {
                     //problem if it found a match for one product and not the others what should it do 
                     //TODO: make a new list and if there was a match in the search remove it from the original list and add it to the found list 
                     // so the non exisiting products that wasn't found can be researched 
-
-                    SearchCritira(nonExistingProductName, potentialMatchesTrial, InValid);
+                    var flag = uniqueMatches.Count;
+                    uniqueMatches.AddRange(SearchCritira(nonExistingProductName));
+                    uniqueMatches.AddRange(WordSearchCritira(nonExistingProductName));
+                    if(uniqueMatches.Count != flag)
+                    {
+                        toBeRemovedFromInValid.Add(nonExistingProductName);
+                    }
+                    
                     
                     
                 }
-                uniqueMatches.AddRange(potentialMatchesTrial);
-                potentialMatchesTrial = uniqueMatches.ToList();
-                if (potentialMatchesTrial.Count > 0)
+
+                if (uniqueMatches.Count > 0)
                 {
-                    if (InValid.Count == 0)
-                    {
-                        /*found all the invalid products*/
-                        return (Valid, InValid, potentialMatches);
 
-                    }
-                    else
+
+                    /* found some products not all */
+                    foreach (string nonExistingProductName in InValid)
                     {
-                        /* found some products not all */
-                        foreach (string nonExistingProductName in InValid)
+                        if (toBeRemovedFromInValid.Contains(nonExistingProductName))
                         {
-                            List<string> matches;
-                            matches =  SearchByThreshold(30, nonExistingProductName, potentialMatchesTrial);
-                            if (matches.Count == 0)
-                            {
-                                matches = SearchByThreshold(45, nonExistingProductName, potentialMatchesTrial);
-                            }
-                            potentialMatchesTrial.AddRange(matches);
+                            continue;
                         }
-                        uniqueMatches.AddRange(potentialMatchesTrial);
-                        potentialMatchesTrial = uniqueMatches.ToList();
-                        /* TODO: Call GPT to return each product and its possible name if not equal should return null */
+                        List<string> matches;
+                        matches = SearchByThreshold(30, nonExistingProductName, uniqueMatches.ToList());
+                        if (matches.Count == 0)
+                        {
+                            matches = SearchByThreshold(45, nonExistingProductName, potentialMatchesTrial);
+                        }
 
-                        
+                        uniqueMatches.AddRange(matches);
                     }
+                  
+                    /* TODO: Call GPT to return each product and its possible name if not equal should return null */
+                    //var result = await GPTCValidateItems(uniqueMatches.ToList(), InValid.ToList());
+                    string result;
+                    using (StreamReader reader = new StreamReader("./Test Files/ProductResponse.json"))
+                    {
+                        result = reader.ReadToEnd();
+                    }
+                   
+                    List<ProductMatches> productMatches = JsonConvert.DeserializeObject<ListProductMatches>(result).ProductMatches;
+                    InValid.Clear();
+                    foreach (var product in productMatches)
+                    {
+                        if(product.Bestmatch == null)
+                        {
+                            InValid.Add(product.Product);
+                        }
+                        else
+                        {
+                            Valid.Add(_context.Products.Where(p => p.Name.Equals(product.Bestmatch)).FirstOrDefault());
+                            
+                        }
+                    }
+                    return (productMatches);
+
+
                 }
                 else
                 {
@@ -647,17 +695,32 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         if (matches.Count == 0)
                         {
                             matches = SearchByThreshold(30, nonExistingProductName, potentialMatchesTrial);
+                            if (matches.Count != 0)
+                            {
+                                InValid.Remove(nonExistingProductName);
+                            }
+                        }
+                        else
+                        {
+                            //Should not remove but replace and then remove 
+                            InValid.Remove(nonExistingProductName);
                         }
                         potentialMatchesTrial.AddRange(matches);
                     }
                     uniqueMatches.AddRange(potentialMatchesTrial);
                     potentialMatchesTrial = uniqueMatches.ToList();
                     /* TODO: Call GPT to return each product and its possible name if not equal should return null */
+                    string result;
+                    using (StreamReader reader = new StreamReader("./Test Files/ProductResponse.json"))
+                    {
+                        result = reader.ReadToEnd();
+                    }
+                    List<ProductMatches> productMatches = JsonConvert.DeserializeObject<List<ProductMatches>>(result);
+                    return (productMatches);
 
                 }
-                return (Valid, InValid, potentialMatches);
             }
-            return (Valid, InValid, potentialMatches);
+            return null;
             
         }
         /* calculate the levenshtein Distance for two strings */
@@ -692,46 +755,50 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         /* this method will search the database using the three SQL methods contains(),startsWith(),endsWith() to ensure that the database contains the product
          * so we don't have to search the entire databse nut only a subset the smaller it gets the better 
          */
-        public void SearchCritira(string nonExistingProductName, List<string> potentialMatchesTrial , List<string> InValid)
+        public List<string> SearchCritira(string nonExistingProductName)
         {
-            var x = _context.Products.Where(p => p.Name.ToLower().Contains(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
-            if (x.Count != 0)
+
+            var matches = _context.Products.Where(p => p.Name.ToLower().Contains(nonExistingProductName.ToLower()) ||
+            p.Name.ToLower().StartsWith(nonExistingProductName) || 
+            p.Name.ToLower().EndsWith(nonExistingProductName)).Select(p => p.Name).ToList();
+            
+            return matches;
+            
+
+        }
+
+        public List<string> WordSearchCritira(string nonExistingProductName)
+        {
+            if(nonExistingProductName == null || nonExistingProductName.Split(" ").Length == 1)
             {
-                potentialMatchesTrial.AddRange(x);
-                InValid.Remove(nonExistingProductName);
+                /* the product is one word  */
+                return null;
             }
             else
             {
-                var y = _context.Products.Where(p => p.Name.ToLower().StartsWith(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
-                if (y.Count != 0)
-                {
-                    potentialMatchesTrial.AddRange(y);
-                    InValid.Remove(nonExistingProductName);
-
-                }
-                else
-                {
-                    var z = _context.Products.Where(p => p.Name.ToLower().EndsWith(nonExistingProductName.ToLower())).Select(p => p.Name).ToList();
-                    if (z.Count != 0)
-                    {
-                        potentialMatchesTrial.AddRange(z);
-                        InValid.Remove(nonExistingProductName);
-
-                    }
-                }
+                var words = nonExistingProductName.ToLower().Split(" ");
+                var searchWord = words[0]+ " "+ words[1];
+                var result = _context.Products.Where(p => p.Name.ToLower().Contains(searchWord)).Select(p=> p.Name).ToList();
+                return result;
             }
-
         }
+
         /* this function will search the entire database and calculate the Levenshtein Distance and return the matches using the threshold */
         public List<string> SearchByThreshold(int threshold, string nonExistingProductName, List<string> potentialMatchesTrial)
         {
-            var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= 30).ToList();
+            // search in the potentail mathces 
+            var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= threshold).ToList();
 
-            var matches = _context.Products
-                                   .AsEnumerable()
-                                   .Where(p => CalculateLevenshteinDistance(nonExistingProductName, p.Name) <= threshold).Select(p => p.Name)
-                                   .ToList();
-            return matches;
+            if(potentialMatchesTrial.Count == 0)
+            {
+                var matches = _context.Products
+                                  .AsEnumerable()
+                                  .Where(p => CalculateLevenshteinDistance(nonExistingProductName, p.Name) <= threshold).Select(p => p.Name)
+                                  .ToList();
+                return matches;
+            }
+           
+            return matchesTrial;
         }
         
 
