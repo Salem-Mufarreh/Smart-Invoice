@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding;
+@using Newtonsoft.Json;
 @using Smart_Invoice.Models;
 @using Smart_Invoice.Models.Invoices;
+@using Smart_Invoice.Models.Products;
 @model InvoiceViewModel;
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
@@ -35,7 +37,7 @@
             @if (Model.ProductInvoice != null)
             {
                 <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Company_Name" 
+                    <input class="form-control is-valid" id="Company_Name" 
                     name="Company.Company_Name" aria-required="true" 
                     value="@Model.ProductInvoice.Company.Company_Name" required/>
                     <label>Company Name</label>
@@ -61,12 +63,35 @@
                         var i = 0;
                         foreach (var product in Model.ProductInvoice.Items)
                         {
-                            
-                                <div class="row g-3">
-                                <div class="form-floating" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="Product @product.Name" name="Product @i" aria-required="true" value="@product.Name" required/>
-                                    <label>Product Name</label>
-                                </div>
+                        var productMatch = Model.ProductMatches.Where(p => p.Product.Equals(product.Name)).FirstOrDefault();
+                        
+                            <div class="row g-3">
+
+                                @{
+                                    if (productMatch != null && productMatch.Invoiceproduct != null)
+                                    {
+                                        <div class="form-floating has-validation" style="margin-bottom:0.5em">
+                                            <input class="form-control is-valid" id="Product @product.Name" name="Product @i" aria-required="true" value="@productMatch.Invoiceproduct.Name" readonly required/>
+                                            <label>Product Name</label>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span id="NotFound @product.Name" class="text-danger">No Item was found! please select from the list or create new item</span>
+                                        <div class="form-floating col-md-6" style="margin-bottom:0.5em; margin-right:150px">
+                                            <select id="Product @product.Name" name="Product @i" data-item-id="@product.Name" class ="form-select  border-danger " asp-items="ViewBag.select" required >
+                                                <option value="@product.Name" disabled selected>@product.Name</option>
+                                            </select>
+                                            <label>Product Name</label>
+                                            <div class="invalid-feedback">Please choose a Product or add new .</div>
+                                        </div>
+                                        <button class="btn btn-primary add-product-btn col-md-2" data-item-id="@product.Name">Add Product</button>
+
+
+
+                                    }
+                                }
+
                                 <div class="form-floating col-md-4" style="margin-bottom:0.5em">
                                     <input class="form-control " id="Unit @i" name="Unit @i" aria-required="true" value="@product.Unit" required/>
                                     <label>Unit</label>
@@ -84,8 +109,7 @@
                                     <label>Total</label>
                                     <div class="invalid-tooltip"> Check the prices again</div>
                                 </div>
-                                </div>
-                            
+                            </div>
                             <hr />
                             i++;
                         }
@@ -110,12 +134,7 @@
                 <label>Invoice Total</label>
                 </div>
             }
-            else
-            {
-                <p>sad</p>
-            }
-            <p id="demo"></p>
-            
+
 
             @if (Model.UtilityInvoice != null)
             {
@@ -213,91 +232,31 @@
    
   </div>
 </div>
+
+
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="myModalLabel">My Popup Modal</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create new Product</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closePopUp()"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-          @Html.Partial("CreatePartial", new Smart_Invoice.Models.Company())
+          @Html.Partial("_CreateProduct", new Smart_Invoice.Models.Products.Product())
       </div>
     </div>
   </div>
 </div>
-<script>
-    @{
-        if(ViewBag.Valid != null){
-        var valid = ViewBag.Valid;
-        foreach (var item in valid)
-        {
-            if (item.Equals("Items"))
-            {
-                <text>var elements = document.querySelectorAll('[id*= "Total"]');
-                for (var i = 0;  elements.length > i; i++) {
-                  elements[i].classList.add('is-valid');
-                }
-                var elements = document.querySelectorAll('[id*= "Unit"]');
-                for (var i = 0;elements.length > i; i++) {
-                  elements[i].classList.add('is-valid');
-                }
-                var elements = document.querySelectorAll('[id*= "Product"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-valid');
-                }
-                var elements = document.querySelectorAll('[id*= "Quantity"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-valid');
-                }
-                </text>
 
-            }
-            else
-            {
-                <text>document.getElementById('@item').classList.add('is-valid');</text>
-
-            }
-
-        }
-        var inValid = ViewBag.inValid;
-        foreach (var item1 in inValid)
-        {
-            if (item1.Equals("Items"))
-            {
-                <text>var elements = document.querySelectorAll('[id*= "Total"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-invalid');
-                }
-                var elements = document.querySelectorAll('[id*= "Unit"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-invalid');
-                }
-                var elements = document.querySelectorAll('[id*= "Product"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-invalid');
-                }
-                var elements = document.querySelectorAll('[id*= "Quantity"]');
-                for (var i = 0; elements.length > i; i++) {
-                  elements[i].classList.add('is-invalid');
-                }
-                </text>
-                
-            }
-            else
-            {
-                <text>document.getElementById('@item1').classList.add('is-invalid');</text>
-            }
-
-        }
-    }
-    }
-
-</script>
 @*
     TODO: add zoom button using scale
     TODO: add Rotate button using transform: rotate(90deg)
 *@
+
+<script>
+
+</script>
+
 <div>
     <a asp-action="Index">Back to List</a>
 </div>

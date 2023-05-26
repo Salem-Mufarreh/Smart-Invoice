@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using RestSharp;
 using Smart_Invoice.Data;
+using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
+using System.Net;
+using System.Text.Json.Nodes;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -49,6 +49,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Products/Create
         public IActionResult Create()
         {
+            if (HttpContext.Session.GetString("Product") != null )
+            {
+                Product product = JsonConvert.DeserializeObject<Product>(HttpContext.Session.GetString("Product"));
+                HttpContext.Session.Remove("Product");
+               
+                
+                    return View(product);
+
+                
+            }
             return View();
         }
 
@@ -63,6 +73,32 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 _context.Add(product);
                 await _context.SaveChangesAsync();
+                var nextView = HttpContext.Session.GetString("NextView");
+                if (nextView != null)
+                {
+                    try
+                    {
+                        Product Temproduct = new Product();
+                        Temproduct = JsonConvert.DeserializeObject<Product>(HttpContext.Session.GetString("Product"));
+
+                        HttpContext.Session.Remove("NextView");
+                        InvoiceViewModel invoiceView = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
+                        if (invoiceView != null)
+                        {
+                            ProductMatches newproduct = invoiceView.ProductMatches.Where(p => p.Product.Equals(Temproduct.Name)).FirstOrDefault();
+                            newproduct.Invoiceproduct = product;
+                            newproduct.Bestmatch = product.Name;
+                            TempData["viewModel"] = JsonConvert.SerializeObject(invoiceView);
+
+                        }
+                        HttpContext.Session.Remove("Product");
+                        return RedirectToAction("Edit", "Invoices");
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -160,5 +196,43 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
           return (_context.Products?.Any(e => e.ProductId == id)).GetValueOrDefault();
         }
+
+        #region API Calls
+        [HttpGet]
+        public async Task<IActionResult> AddProductPopup(string itemId)
+        {
+            // Retrieve the necessary data for the popup, such as existing products, etc.
+            var jsonResult = HttpContext.Session.GetString("Product");
+            HttpContext.Session.Remove("Product");
+            Product product = JsonConvert.DeserializeObject<Product>(jsonResult);
+            return PartialView("_CreateProduct",product);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SubmitProduct([FromBody] Product product)
+        {
+
+            if (ModelState.IsValid)
+            {
+                await _context.Products.AddAsync(product);
+                _context.SaveChanges();
+                return Ok(new { data = product.Name });
+            }
+            return BadRequest();
+        }
+        [HttpGet]
+        public IActionResult GetProduct(int id)
+        {
+            var product = _context.Products.Find(id);
+
+            if (product != null)
+            {
+                return Ok(product); // Return 200 OK with the product as the response body
+            }
+
+            return NotFound(); // Return 404 Not Found if the product is not found
+        }
+
+        #endregion
     }
+
 }

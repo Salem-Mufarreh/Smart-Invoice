@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,6 +16,7 @@ using Smart_Invoice.Data;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
 using Smart_Invoice.Utility;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -150,51 +152,89 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
             try
             {
-
-                string Sresponse;
-                using (StreamReader reader = new StreamReader("./Test Files/test2.json"))
+                if (TempData["viewModel"] == null)
                 {
-                    Sresponse = reader.ReadToEnd();
 
-
-
-                }
-                InvoiceViewModel viewModel = new InvoiceViewModel();
-                
-                if (Sresponse.ToLower().Contains("items"))
-                {
-                    viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
-                    if (! await CheckCompany(viewModel.ProductInvoice.Company.Company_Name_English)) {//name in english is null 
-                        HttpContext.Session.SetString("NextView", "Edit");
-                        TempData["viewModel"] = JsonConvert.SerializeObject(viewModel);
-                        return RedirectToAction("Create","Companies");
-                    }
-                    var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
-                    if (invoiceID != null)
+                    string Sresponse;
+                    using (StreamReader reader = new StreamReader("./Test Files/test2.json"))
                     {
-                        var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
-                        TempData["Toastr"] = JsonConvert.SerializeObject(Error);
-                        return RedirectToAction(nameof(Index));
+                        Sresponse = reader.ReadToEnd();
                     }
-                    var result = await CheckItems(viewModel.ProductInvoice);
-                    viewModel.ProductMatches.AddRange(result);
-                }
-                else if (Sresponse.ToLower().Contains("meter_number"))
-                {
-                    viewModel.UtilityInvoice = JsonConvert.DeserializeObject<UtilityInvoice>(Sresponse);
-                    var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.UtilityInvoice.Invoice_Number));
-                    if (invoiceID != null)
-                    {
-                        var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
-                        TempData["Toastr"] = JsonConvert.SerializeObject(Error);
-                        return RedirectToAction(nameof(Index));
-                    }
-                }
-                byte[] imageBytes = HttpContext.Session.Get("image");
-                string base64Image = Convert.ToBase64String(imageBytes);
-                ViewBag.Base64Image = base64Image;
+                    InvoiceViewModel viewModel = new InvoiceViewModel();
 
-                return View(viewModel);
+                    if (Sresponse.ToLower().Contains("items"))
+                    {
+                        viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
+                        if (!await CheckCompany(viewModel.ProductInvoice.Company.Company_Name_English))
+                        {//name in english is null 
+                            HttpContext.Session.SetString("NextView", "Edit");
+                            TempData["viewModel"] = JsonConvert.SerializeObject(viewModel);
+                            return RedirectToAction("Create", "Companies");
+                        }
+                        var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
+                        if (invoiceID != null)
+                        {
+                            var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                            TempData["Toastr"] = JsonConvert.SerializeObject(Error);
+                            return RedirectToAction(nameof(Index));
+                        }
+                        List<ProductMatches> result = await CheckItems(viewModel.ProductInvoice);
+                        viewModel.ProductMatches = result;
+                        foreach (var item in result)
+                        {
+                            if (item.Invoiceproduct != null)
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                
+                                ViewData["select"] = new SelectList(SearchRelatedProducts(item.Product).Select(p=> p.Name));
+                                HttpContext.Session.SetString("ProductInvoice",JsonConvert.SerializeObject(viewModel).ToString());
+                                InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(item.Product)).FirstOrDefault();
+                                Product product1 = new Product();
+                                product1.Name = Item.Name;
+                                product1.CostPrice = Item.UnitPrice;
+                                product1.Price = Item.UnitPrice + (Item.UnitPrice * 0.16);
+                                product1.CreatedDate = DateTime.Now;
+                                product1.UpdatedDate = DateTime.Now;
+                                HttpContext.Session.SetString("Product", JsonConvert.SerializeObject(product1));
+                                
+                                /* HttpContext.Session.SetString("NextView", "Edit");
+
+
+                                 return RedirectToAction("Create", "Products");*/
+                            }
+                        }
+                       
+                    }
+                    else if (Sresponse.ToLower().Contains("meter_number"))
+                    {
+                        viewModel.UtilityInvoice = JsonConvert.DeserializeObject<UtilityInvoice>(Sresponse);
+                        var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.UtilityInvoice.Invoice_Number));
+                        if (invoiceID != null)
+                        {
+                            var Error = new Toastr(SD.ToastError, "Invoice Was Already been Captured!");
+                            TempData["Toastr"] = JsonConvert.SerializeObject(Error);
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                    byte[] imageBytes = HttpContext.Session.Get("image");
+                    string base64Image = Convert.ToBase64String(imageBytes);
+                    ViewBag.Base64Image = base64Image;
+
+                    return View(viewModel);
+                }
+                else
+                {
+                    InvoiceViewModel invoiceView = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
+
+                    byte[] imageBytes = HttpContext.Session.Get("image");
+                    string base64Image = Convert.ToBase64String(imageBytes);
+                    ViewBag.Base64Image = base64Image;
+
+                    return View(invoiceView);
+                }
             
             }catch(Exception ex)
             {
@@ -596,37 +636,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             if (Invoices != null && Invoices.Items != null )
             {
                 List<string> items = Invoices.Items.Select(n => n.Name).ToList();
-                int batchSize = 10;
+                /*int batchSize = 10;
                 var batches = Enumerable.Range(0, (items.Count + batchSize - 1) / batchSize)
                         .Select(i => items.Skip(i * batchSize).Take(batchSize));
-
-                foreach (var batch in batches)
-                {
-                    var products = _context.Products
-                          .Where(p => batch.Contains(p.Name))
-                          .ToList();
-                    try {
-                        // Add existing product names to the existingProductNames list
-                        Valid.AddRange(products);
-
-                        // Add non-existing product names to the nonExistingProductNames list
-                        InValid.AddRange(batch.Except(products.Select(p => p.Name)));
-                    }
-                    catch (Exception ex)
-                    {
-                        var e = ex;
-                    }
-                }
+*/
+                
                 HashSet<string> uniqueMatches = new HashSet<string>();
+                HashSet<KeyValuePair<string, string>> keyValuePairs = new HashSet<KeyValuePair<string, string>>();
                 List<string> potentialMatchesTrial = new List<string>();
                 List<string>toBeRemovedFromInValid = new List<string>();
 
-                foreach (string nonExistingProductName in InValid)
+                foreach (string nonExistingProductName in items)
                 {
                     //problem if it found a match for one product and not the others what should it do 
                     //TODO: make a new list and if there was a match in the search remove it from the original list and add it to the found list 
                     // so the non exisiting products that wasn't found can be researched 
                     var flag = uniqueMatches.Count;
+                    keyValuePairs.Add( new KeyValuePair<string,string>( nonExistingProductName, string.Join(",", SearchCritira(nonExistingProductName))));
+                    keyValuePairs.Add(new KeyValuePair<string, string>(nonExistingProductName, string.Join(",", WordSearchCritira(nonExistingProductName))));
                     uniqueMatches.AddRange(SearchCritira(nonExistingProductName));
                     uniqueMatches.AddRange(WordSearchCritira(nonExistingProductName));
                     if(uniqueMatches.Count != flag)
@@ -637,7 +664,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     
                     
                 }
+                keyValuePairs.RemoveWhere(pair => string.IsNullOrEmpty(pair.Value));
 
+                //TODO : if it found everything in the items 
+                if (uniqueMatches.Count >= items.Count ) {
+                    List<ProductMatches> productMatches = new List<ProductMatches>();
+                    int flag = 0;
+                    foreach (var item in keyValuePairs)
+                    {
+                        ProductMatches productTemp = new ProductMatches();
+
+                        productTemp.Bestmatch = item.Value;
+                        productTemp.Invoiceproduct = _context.Products.Where(p => p.Name.Equals(item.Value)).FirstOrDefault();
+                        productTemp.Product = item.Key;
+                        flag ++;
+                        productMatches.Add(productTemp);
+                    }
+                    return productMatches;
+                }
                 if (uniqueMatches.Count > 0)
                 {
 
@@ -677,8 +721,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         }
                         else
                         {
-                            Valid.Add(_context.Products.Where(p => p.Name.Equals(product.Bestmatch)).FirstOrDefault());
+                            // assign the product to its value
+                            Product x =await  _context.Products.Where(p => p.Name.Equals(product.Bestmatch)).FirstOrDefaultAsync();
+                            product.Invoiceproduct= x;
                             
+
                         }
                     }
                     return (productMatches);
@@ -779,6 +826,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 var words = nonExistingProductName.ToLower().Split(" ");
                 var searchWord = words[0]+ " "+ words[1];
                 var result = _context.Products.Where(p => p.Name.ToLower().Contains(searchWord)).Select(p=> p.Name).ToList();
+                var result2 = _context.Products
+           .Where(p => EF.Functions.Like(p.Name, "%" + searchWord + "%"))
+           .Select(p => p.Name)
+           .ToList();
                 return result;
             }
         }
@@ -801,6 +852,37 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return matchesTrial;
         }
         
+        public async Task<IActionResult> CreateProduct(string product, InvoiceViewModel viewModel)
+        {
+            
+               
+            InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(product)).FirstOrDefault();
+            Product product1 = new Product();
+            product1.Name = Item.Name;
+            product1.CostPrice = Item.UnitPrice;
+            product1.Price = Item.UnitPrice * 0.16;
+            product1.CreatedDate = DateTime.Now;
+            product1.UpdatedDate = DateTime.Now;
+
+            TempData["Product"] =JsonConvert.SerializeObject(product1);
+            return RedirectToAction("Index");
+                
+            
+        }
+        public  List<Product> SearchRelatedProducts(string product)
+        {
+            if (product.Split(" ").Length > 1) {
+                var words = product.Split(" ");
+                var result =  _context.Products.Where(p => EF.Functions.Like(p.Name, "%" + words[0] + "%") || EF.Functions.Like(p.Name, "%" + words[1] + "%")).ToList();
+                return result;
+            }
+            else if(product.Split(" ").Length == 1)
+            {
+                var result = _context.Products.Where(p => EF.Functions.Like(p.Name, "%" + product + "%")).ToList();
+                return result;
+            }
+            return null;
+        }
 
         #endregion
     }
