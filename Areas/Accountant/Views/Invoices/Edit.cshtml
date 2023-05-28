@@ -80,7 +80,7 @@
                                         <span id="NotFound @product.Name" class="text-danger">No Item was found! please select from the list or create new item</span>
                                         <div class="form-floating col-md-6" style="margin-bottom:0.5em; margin-right:150px">
                                             <select id="Product @product.Name" name="Product @i" data-item-id="@product.Name" class ="form-select  border-danger " asp-items="ViewBag.select" required >
-                                                <option value="@product.Name" disabled selected>@product.Name</option>
+                                                <option value="" disabled selected>@product.Name</option>
                                             </select>
                                             <label>Product Name</label>
                                             <div class="invalid-feedback">Please choose a Product or add new .</div>

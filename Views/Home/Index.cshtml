@@ -1,33 +1,27 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome to";
 }
 <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" rel="stylesheet" />
 
-<div class="text-center">
 
-    <a class="nav-link text-dark" asp-area="Admin" asp-controller="Home" >Register</a>
-    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index" asp-area="Admin">Admin</a>
-    <a class="nav-link text-dark" asp-controller="Invoices" asp-action="Create" asp-area="Accountant">Accountant</a>
 
-</div>
-<div>
-    
-    <table id="myTable" class="display">
-    <thead>
-        <tr>
-            <th>Column 1</th>
-            <th>Column 2</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-        </tr>
-        <tr>
-            <td>Row 2 Data 1</td>
-            <td>Row 2 Data 2</td>
-        </tr>
-    </tbody>
-</table>
-</div>
+ <div class="container text-dark text-center">
+            <h1>Welcome to Smart Invoice+</h1>
+        </div>   
+
+ <main class="container py-4">
+        <section>
+            <h2>About Smart Invoice+</h2>
+            <p>Smart Invoice+ is an intelligent cloud-based financial system that revolutionizes invoice management and empowers businesses to streamline their operations. With its advanced features and intuitive interface, Smart Invoice+ simplifies the invoicing process, tracks inventory, and provides valuable insights into business performance.</p>
+            <p>The core feature of Smart Invoice+ is its powerful invoice extraction capability, powered by cutting-edge technologies including Google Vision and OpenAI models. Users can effortlessly upload invoice photos, and the system automatically extracts and processes the relevant information. It seamlessly checks the existence of the company within the system, creating new profiles when necessary.</p>
+            <p>In addition, Smart Invoice+ offers automated verification of products/items listed in invoices against an extensive database. If new products are identified, users are prompted to create them, ensuring comprehensive inventory management. The system also performs a thorough comparison of invoice prices with historical data, promptly alerting users to any discrepancies.</p>
+            <p>Business owners benefit from a customizable dashboard that provides a comprehensive overview of relevant information such as cash flow, best-selling products, and expense breakdown by invoice type. This empowers owners to make data-driven decisions and gain valuable insights into their business's financial performance.</p>
+            <p>Accountants are equipped with a dedicated dashboard tailored to their specific needs. They can access relevant financial information, generate reports, and track key metrics to efficiently manage financial operations. This comprehensive dashboard simplifies the accountant's tasks and enhances collaboration with other stakeholders.</p>
+            <p>With Smart Invoice+, businesses of all sizes can experience enhanced efficiency, accuracy, and productivity in their financial operations. Say goodbye to manual invoice processing and embrace the power of automation with Smart Invoice+. Unlock the potential of your business and let Smart Invoice+ revolutionize the way you manage your finances.</p>
+        </section>
+    </main>
+    <footer class="bg-dark text-light py-3">
+        <div class="container text-center">
+            <p>&copy; 2023 Smart Invoice+</p>
+        </div>
+    </footer>

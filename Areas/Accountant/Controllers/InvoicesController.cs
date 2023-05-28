@@ -123,7 +123,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     //ViewBag.response = respone;
 
                     string response;
-                    using (StreamReader reader = new StreamReader("./Test Files/Mresponse.json"))
+                    using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                     {
                         var responseOBj = JsonConvert.DeserializeObject<Invoice>(reader.ReadToEnd());
                         response = JsonConvert.SerializeObject(responseOBj);
@@ -156,7 +156,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
 
                     string Sresponse;
-                    using (StreamReader reader = new StreamReader("./Test Files/test2.json"))
+                    using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                     {
                         Sresponse = reader.ReadToEnd();
                     }
@@ -180,6 +180,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         }
                         List<ProductMatches> result = await CheckItems(viewModel.ProductInvoice);
                         viewModel.ProductMatches = result;
+                        List<SelectListItem> optionsList = new List<SelectListItem>();
+                        List<Product> missingProducts = new List<Product>();
                         foreach (var item in result)
                         {
                             if (item.Invoiceproduct != null)
@@ -188,8 +190,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             }
                             else
                             {
-                                
-                                ViewData["select"] = new SelectList(SearchRelatedProducts(item.Product).Select(p=> p.Name));
+                                SelectListItem listItem = new SelectListItem { 
+                                    Text = item.Bestmatch,
+                                    Value = item.Bestmatch,
+                                };
+                                optionsList.Add(listItem);
                                 HttpContext.Session.SetString("ProductInvoice",JsonConvert.SerializeObject(viewModel).ToString());
                                 InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(item.Product)).FirstOrDefault();
                                 Product product1 = new Product();
@@ -198,15 +203,19 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                                 product1.Price = Item.UnitPrice + (Item.UnitPrice * 0.16);
                                 product1.CreatedDate = DateTime.Now;
                                 product1.UpdatedDate = DateTime.Now;
-                                HttpContext.Session.SetString("Product", JsonConvert.SerializeObject(product1));
-                                
+                                missingProducts.Add(product1);
                                 /* HttpContext.Session.SetString("NextView", "Edit");
 
 
                                  return RedirectToAction("Create", "Products");*/
                             }
+                            
                         }
-                       
+                        
+                        HttpContext.Session.SetString("Product", JsonConvert.SerializeObject(missingProducts.DistinctBy(p=> p.Name)));
+
+                        ViewData["select"] = new SelectList(optionsList, "Value", "Text");
+
                     }
                     else if (Sresponse.ToLower().Contains("meter_number"))
                     {
@@ -341,12 +350,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         invoice.CompanyID = company;
                         _context.ProductInvoices.Add(invoice);
                         await _context.SaveChangesAsync();
+
                     }
                 }
 
 
                 _logger.LogInformation(User.Identity.Name + "Has Submited a new Document ");
-
+                HttpContext.Session.Remove("Product");
                 return RedirectToAction(nameof(Index));
                 //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }
@@ -734,15 +744,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 else
                 {
+                    List<ProductMatches> productMatches = new List<ProductMatches>();
+
                     /* Couldn't find any product form the search critira search all the database should be an extreem method */
-                    foreach (string nonExistingProductName in InValid)
+                    foreach (string nonExistingProductName in items)
                     {
                         List<string> matches;
-                        matches = SearchByThreshold(20, nonExistingProductName, potentialMatchesTrial);
+                        matches = SearchByThreshold(nonExistingProductName.Length, nonExistingProductName, potentialMatchesTrial);
                         if (matches.Count == 0)
                         {
-                            matches = SearchByThreshold(30, nonExistingProductName, potentialMatchesTrial);
-                            if (matches.Count != 0)
+                            matches = SearchByThreshold((int)Math.Floor(nonExistingProductName.Length*1.5), nonExistingProductName, potentialMatchesTrial);                            if (matches.Count != 0)
                             {
                                 InValid.Remove(nonExistingProductName);
                             }
@@ -752,17 +763,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             //Should not remove but replace and then remove 
                             InValid.Remove(nonExistingProductName);
                         }
-                        potentialMatchesTrial.AddRange(matches);
+                       
+                        foreach (var item in matches.ToList())
+                        {
+                            ProductMatches product = new ProductMatches();
+                            product.Product = nonExistingProductName;
+                            product.Bestmatch = item;
+                            productMatches.Add(product);
+                        }
                     }
-                    uniqueMatches.AddRange(potentialMatchesTrial);
-                    potentialMatchesTrial = uniqueMatches.ToList();
-                    /* TODO: Call GPT to return each product and its possible name if not equal should return null */
-                    string result;
-                    using (StreamReader reader = new StreamReader("./Test Files/ProductResponse.json"))
-                    {
-                        result = reader.ReadToEnd();
-                    }
-                    List<ProductMatches> productMatches = JsonConvert.DeserializeObject<List<ProductMatches>>(result);
+                   
                     return (productMatches);
 
                 }

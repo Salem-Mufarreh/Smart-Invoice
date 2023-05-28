@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RestSharp;
@@ -203,14 +204,21 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             // Retrieve the necessary data for the popup, such as existing products, etc.
             var jsonResult = HttpContext.Session.GetString("Product");
-            HttpContext.Session.Remove("Product");
-            Product product = JsonConvert.DeserializeObject<Product>(jsonResult);
-            return PartialView("_CreateProduct",product);
+            List<Product> product = JsonConvert.DeserializeObject<List<Product>>(jsonResult);
+            try
+            {
+                ViewData["Category"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
+            }
+            catch (Exception ex) { 
+            }
+            return PartialView("_CreateProduct",product.Where(p=> p.Name.Equals(itemId)).FirstOrDefault());
         }
         [HttpPost]
         public async Task<IActionResult> SubmitProduct([FromBody] Product product)
         {
-
+            product.IsActive = true;
+            product.IsAvailable = true;
+            product.SKU = GenerateSKU();
             if (ModelState.IsValid)
             {
                 await _context.Products.AddAsync(product);
@@ -230,6 +238,20 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             return NotFound(); // Return 404 Not Found if the product is not found
+        }
+
+        public string GenerateSKU()
+        {
+            var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var sku = "";
+
+            for (var i = 0; i < 8; i++)
+            {
+                int randomIndex =(int) Math.Floor(new Random().NextDouble() * characters.Length);
+                sku += characters[randomIndex];
+            }
+
+            return sku;
         }
 
         #endregion

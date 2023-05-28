@@ -43,11 +43,13 @@
             " contains the following fields: [Company (as object),invoice_number, service-number," +
             "invoice_date,Meter_Number,Previous_Reading_Date,Current_Reading,Category,VAT,Previous_Debt,Paid_Amount]. " +
             "Please provide the JSON structure for the invoice with the given fields and their corresponding values.";
+        
         public const string ProductPrompt = "Can you restructure the given model as an invoice and" +
             " return the values as a key-value JSON object, where the keys are predefined? The model" +
             " contains the following fields: [Company (as object),invoice_number, Invoice_Date, Subtotal, Tax, Total, Items(as Object)]. " +
             "Please provide the JSON structure for the invoice with the given fields and their corresponding values.";
-        public const string CheckForItemsPrompt = "you have two lists please match which product is which";
+       
+        public const string CheckForItemsPrompt = "you have two lists please return the best match for the invoice product form the database:";
         public const string CheckForItemsPromptC = "return the response as json format structured like the following (matches : [product(),bestmatch()]) if it was null keep it null";
         /* Toast Type */
         public const string ToastError = "error";

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230528095344_added category class v3")]
+    partial class addedcategoryclassv3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -498,8 +500,6 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
                 });
 
@@ -723,15 +723,6 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ProductInvoice");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Products.Product", b =>
-                {
-                    b.HasOne("Smart_Invoice.Models.Products.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Stock.Inventory", b =>

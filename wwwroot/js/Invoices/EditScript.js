@@ -68,22 +68,24 @@ document.addEventListener('submit', function (event) {
                     var select = document.getElementById("Product " + usingItem);
                     var option = document.createElement("option");
                     var button = $(".add-product-btn");
-                    button.hide;
+                    button.hide();
                     var parentDiv = select.parentNode;
                     parentDiv.classList.remove("col-md-6");
                     parentDiv.style.marginRight = 0;
                     option.text = data.data;
                     option.value = data.data;
                     option.selected = true;
+                    option.setAttribute("selected", "selected");
                     select.add(option);
                     var selectedOption = select.options[select.selectedIndex];
                     select.remove(selectedOption);
                     select.classList.remove("border-danger");
-                    select.classList.add("border-success");
+                    select.classList.add("border-success","is-valid");
                     var span = document.getElementById("NotFound " + usingItem);
                     span.textContent = "product Has been Create";
                     span.classList.remove("text-danger");
                     span.classList.add("text-success");
+                    select.style.pointerEvents = 'none';
                     toastr["success"]("Product has been Created !");
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
