@@ -67,7 +67,7 @@ document.addEventListener('submit', function (event) {
                     $("#myModal").modal("hide");
                     var select = document.getElementById("Product " + usingItem);
                     var option = document.createElement("option");
-                    var button = $(".add-product-btn");
+                    var button = $("#" + usingItem);
                     button.hide();
                     var parentDiv = select.parentNode;
                     parentDiv.classList.remove("col-md-6");

@@ -21,23 +21,31 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using static Google.Rpc.Context.AttributeContext.Types;
 using Image = Google.Cloud.Vision.V1.Image;
 using Product = Smart_Invoice.Models.Products.Product;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
+
     [Area("Accountant")]
     public class InvoicesController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LoginModel> _logger;
         private readonly string _OpenAi;
+        private readonly JsonSerializerSettings _serializerSettings;
         
         public InvoicesController(ApplicationDbContext context, ILogger<LoginModel> logger, IOptions<OpenAiSettings> settings)
         {
             _context = context;
             _logger = logger;
             _OpenAi = settings.Value.apiKey;
+            _serializerSettings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Include,
+            };
         }
 
         // GET: Accountant/Invoices
@@ -118,17 +126,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     };
 
                     /* Call API's */
-                    //var document = await VisionExtract(imageProto);
-                    //var respone = await CallOpenAi(document);
-                    //ViewBag.response = respone;
+                    var document = await VisionExtract(imageProto);
+                    var respone = await CallOpenAi(document);
+                    ViewBag.response = respone;
 
-                    string response;
+                    /*string response;
                     using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                     {
                         var responseOBj = JsonConvert.DeserializeObject<Invoice>(reader.ReadToEnd());
                         response = JsonConvert.SerializeObject(responseOBj);
-                    }
-                    TempData["model"] = response;
+                    }*/
+                    TempData["model"] = respone;
                     HttpContext.Session.Set("image", imageBytes);
                     return RedirectToAction(nameof(Edit));
 
@@ -155,20 +163,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 if (TempData["viewModel"] == null)
                 {
 
-                    string Sresponse;
-                    using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
-                    {
-                        Sresponse = reader.ReadToEnd();
-                    }
+                    string Sresponse = TempData["model"] as string;
+                    int jsonStartIndex = Sresponse.IndexOf("{"); // Find the index of the opening brace of the JSON object
+                    string jsonOnly = Sresponse.Substring(jsonStartIndex); // Extract the JSON part
+                    Sresponse = jsonOnly;
+                    /* using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
+                     {
+                         Sresponse = reader.ReadToEnd();
+                     }*/
                     InvoiceViewModel viewModel = new InvoiceViewModel();
 
                     if (Sresponse.ToLower().Contains("items"))
                     {
-                        viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse);
+                        viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse,_serializerSettings);
                         if (!await CheckCompany(viewModel.ProductInvoice.Company.Company_Name_English))
-                        {//name in english is null 
+                        {
+                            //name in english is null 
                             HttpContext.Session.SetString("NextView", "Edit");
-                            TempData["viewModel"] = JsonConvert.SerializeObject(viewModel);
+                            TempData["viewModel"] = JsonConvert.SerializeObject(viewModel,_serializerSettings);
                             return RedirectToAction("Create", "Companies");
                         }
                         var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
@@ -195,7 +207,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                                     Value = item.Bestmatch,
                                 };
                                 optionsList.Add(listItem);
-                                HttpContext.Session.SetString("ProductInvoice",JsonConvert.SerializeObject(viewModel).ToString());
+                                HttpContext.Session.SetString("ProductInvoice",JsonConvert.SerializeObject(viewModel, _serializerSettings).ToString());
                                 InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(item.Product)).FirstOrDefault();
                                 Product product1 = new Product();
                                 product1.Name = Item.Name;
@@ -248,7 +260,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }catch(Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return View();
+                return View(new InvoiceViewModel());
             }
         }
 
@@ -501,7 +513,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public async Task<string> CallOpenAi(string rawdocument)
         {
             
-            var prompt =  "can you structure an invoice from this data as key-value pair in json : '"+rawdocument+"'";
+            var prompt =  SD.Productprompt_v2+rawdocument;
             var apiKey = _OpenAi;
             var model = "text-davinci-003";
 
@@ -523,8 +535,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             var productsString = string.Join(", ", products);
             var potentialMatchesString = string.Join(", ", potentialMatches);
-            var prompt = SD.CheckForItemsPrompt + " products from invoice:[ " + productsString+
-                "] potential match from database: [" + potentialMatchesString +"] " + SD.CheckForItemsPromptC ;
+            var prompt = SD.CheckForItemsPrompt + " Invoice_product[ " + productsString+
+                "] and database_products: [" + potentialMatchesString +"] " + SD.CheckForItemsPromptC ;
             var apiKey = _OpenAi;
             var model = "text-davinci-003";
 
@@ -627,7 +639,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             if (!string.IsNullOrEmpty(companyName))
             {
-                var company =await _context.Companies.Where(c=> c.Company_Name_English.ToLower().Equals(companyName.ToLower())).FirstOrDefaultAsync();
+                var company =await _context.Companies.Where(c=> EF.Functions.Like(c.Company_Name_English, "%" +companyName.ToLower() +"%")).FirstOrDefaultAsync();
                 if (company != null)
                 {
                     return true;
@@ -661,18 +673,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     //problem if it found a match for one product and not the others what should it do 
                     //TODO: make a new list and if there was a match in the search remove it from the original list and add it to the found list 
                     // so the non exisiting products that wasn't found can be researched 
-                    var flag = uniqueMatches.Count;
-                    keyValuePairs.Add( new KeyValuePair<string,string>( nonExistingProductName, string.Join(",", SearchCritira(nonExistingProductName))));
-                    keyValuePairs.Add(new KeyValuePair<string, string>(nonExistingProductName, string.Join(",", WordSearchCritira(nonExistingProductName))));
-                    uniqueMatches.AddRange(SearchCritira(nonExistingProductName));
-                    uniqueMatches.AddRange(WordSearchCritira(nonExistingProductName));
-                    if(uniqueMatches.Count != flag)
+                    try
                     {
-                        toBeRemovedFromInValid.Add(nonExistingProductName);
+                        var flag = uniqueMatches.Count;
+                        keyValuePairs.Add(new KeyValuePair<string, string>(nonExistingProductName, string.Join(",", SearchCritira(nonExistingProductName))));
+                        keyValuePairs.Add(new KeyValuePair<string, string>(nonExistingProductName, string.Join(",", WordSearchCritira(nonExistingProductName))));
+                        uniqueMatches.AddRange(SearchCritira(nonExistingProductName));
+                        uniqueMatches.AddRange(WordSearchCritira(nonExistingProductName));
+                        if (uniqueMatches.Count != flag)
+                        {
+                            toBeRemovedFromInValid.Add(nonExistingProductName);
+                        }
+                    }catch(Exception ex)
+                    {
+
                     }
-                    
-                    
-                    
+
+
+
                 }
                 keyValuePairs.RemoveWhere(pair => string.IsNullOrEmpty(pair.Value));
 
@@ -714,12 +732,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     }
                   
                     /* TODO: Call GPT to return each product and its possible name if not equal should return null */
-                    //var result = await GPTCValidateItems(uniqueMatches.ToList(), InValid.ToList());
-                    string result;
+                    var result = await GPTCValidateItems(uniqueMatches.ToList(), InValid.ToList());
+                    /*string result;
                     using (StreamReader reader = new StreamReader("./Test Files/ProductResponse.json"))
                     {
                         result = reader.ReadToEnd();
-                    }
+                    }*/
                    
                     List<ProductMatches> productMatches = JsonConvert.DeserializeObject<ListProductMatches>(result).ProductMatches;
                     InValid.Clear();
@@ -829,7 +847,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             if(nonExistingProductName == null || nonExistingProductName.Split(" ").Length == 1)
             {
                 /* the product is one word  */
-                return null;
+                return new List<string>();
             }
             else
             {
