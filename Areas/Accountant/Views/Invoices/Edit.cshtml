@@ -3,6 +3,7 @@
 @using Smart_Invoice.Models;
 @using Smart_Invoice.Models.Invoices;
 @using Smart_Invoice.Models.Products;
+@using Smart_Invoice;
 @model InvoiceViewModel;
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
@@ -36,11 +37,15 @@
         @Html.AntiForgeryToken()
             @if (Model.ProductInvoice != null)
             {
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control is-valid" id="Company_Name" 
-                    name="Company.Company_Name" aria-required="true" 
-                    value="@Model.ProductInvoice.Company.Company_Name" required/>
-                    <label>Company Name</label>
+                <div class="row">
+                    <div class="form-floating col-md-6" style="margin-bottom:0.5em">
+                        <select class="form-select" id="Company_Name" 
+                        name="Company.Company_Name" aria-required="true" asp-items="ViewBag.Companies"
+                        required></select>
+                        <label>Company Name</label>
+
+                    </div>
+                    <button class="btn btn-primary add-company-btn col-md-2" id="@Model.ProductInvoice.Company.Company_Name">Create Company</button>
                 </div>
                 <div class="form-floating" style="margin-bottom:0.5em">
                     <input class="form-control" id="Invoice_Number" 
@@ -114,7 +119,8 @@
                             i++;
                         }
                     }
-                        
+                   
+                    
                 <div class="form-floating" style="margin-bottom:0.5em">
                     <input class="form-control" id="Subtotal" 
                     name="Subtotal" aria-required="true" 
@@ -231,6 +237,7 @@
       
    
   </div>
+  
 </div>
 
 
@@ -239,7 +246,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title" id="myModalLabel">Create new Product</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closePopUp()"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closePopUp(this)"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
           @Html.Partial("_CreateProduct", new Smart_Invoice.Models.Products.Product())
@@ -248,13 +255,26 @@
   </div>
 </div>
 
+<div class="modal fade" id="CreateCompany" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Create new Company</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closePopUp(this)"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+          @Html.PartialAsync("CreateCompanyPartial", new Smart_Invoice.Models.Company())
+      </div>
+    </div>
+  </div>
+</div>
 @*
     TODO: add zoom button using scale
     TODO: add Rotate button using transform: rotate(90deg)
 *@
 
 <script>
-
+    var viewModel = @Model;
 </script>
 
 <div>

@@ -193,14 +193,39 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         #region API Calls
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPerson()
+        public async Task<IActionResult> InitCompanyPartial()
         {
-            var Person = await _context.Contacts.ToListAsync();
-            if(Person == null)
+            InvoiceViewModel model = JsonConvert.DeserializeObject<InvoiceViewModel>(HttpContext.Session.GetString("ViewModel"));
+            if (model != null)
             {
-                return null;
+                Product_Invoice invoice = model.ProductInvoice;
+                if (invoice != null)
+                {
+                    return PartialView("CreateCompanyPartial", invoice.Company);
+                }
+                return Problem();
             }
-            return Json(new {data = Person});
+            else
+            {
+                return Problem();
+            }
+
+        }
+
+        [HttpPost]
+        public  Task<IActionResult> SubmitCompany([FromBody] Company company)
+        {
+            company.person = _context.Contacts.Where(c => c.Name.Equals("Salem")).FirstOrDefault();
+            if (ModelState.IsValid)
+            {
+                 _context.Companies.Add(company);
+                 _context.SaveChanges();
+                return Task.FromResult<IActionResult>(Ok());
+            }
+            else
+            {
+                return Task.FromResult<IActionResult>(NotFound());
+            }
         }
 
         #endregion

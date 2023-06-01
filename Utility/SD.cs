@@ -55,7 +55,7 @@
 
         public const string Productprompt_v2 = "Input: Generate the JSON structure for the invoice with the given fields and values.\r\n\r\nFields:\r\n- Company (Object):\r\n    - Company_Name (string)\r\n    - Company_Name_English (string)\r\n    - Address (string)\r\n    - Phone (string)\r\n    - Fax (string)\r\n    - Company_License_Registration_Number (string)\r\n- invoice_number (string)\r\n- Invoice_Date (string)\r\n- Subtotal (double)\r\n- Tax (double)\r\n- Total (double)\r\n- Items (Array of Objects):\r\n    - Name (string)\r\n    - Quantity (Integer)\r\n    - Unit (string)\r\n    - UnitPrice (double)\r\n    - Total (double)\r\n- Currency (string) default is(ILS)\r\n\r\nPlease generate the JSON structure for the invoice as per the given fields and values.\r\n";
         public const string CheckForItemsPrompt = "you have two lists please return the best match for the invoice product form the database:";
-        public const string CheckForItemsPromptC = "return the response as json format structured like the following (matches : [product(),bestmatch()]) if it was null keep it null";
+        public const string CheckForItemsPromptC = "return the response as json format structured like the following (ProductMatches : [product(),bestmatch()]) if it was null keep it null";
         /* Toast Type */
         public const string ToastError = "error";
         public const string ToastSuccess = "success";

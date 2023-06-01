@@ -2,6 +2,7 @@
 using Google.Cloud.Storage.V1;
 using Google.Cloud.Vision.V1;
 using Google.Protobuf;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
@@ -13,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using Smart_Invoice.Areas.Identity.Pages.Account;
 using Smart_Invoice.Data;
+using Smart_Invoice.Models;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
 using Smart_Invoice.Utility;
@@ -21,6 +23,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using System.Web.Helpers;
+using static Google.Apis.Requests.BatchRequest;
 using static Google.Rpc.Context.AttributeContext.Types;
 using Image = Google.Cloud.Vision.V1.Image;
 using Product = Smart_Invoice.Models.Products.Product;
@@ -137,7 +141,9 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         response = JsonConvert.SerializeObject(responseOBj);
                     }*/
                     TempData["model"] = respone;
-                    HttpContext.Session.Set("image", imageBytes);
+                    HttpContext.Session.SetString("model", respone);
+
+                    HttpContext.Session.SetString("image", Convert.ToBase64String(imageBytes).ToString());
                     return RedirectToAction(nameof(Edit));
 
                 }
@@ -156,17 +162,27 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // GET: Accountant/Invoices/Edit/5
         public async Task<IActionResult> Edit()
         {
-            /*var response2 = TempData["model"] as string;
-            var response = JsonConvert.DeserializeObject<UtilityInvoice>(response2);*/
+        
             try
             {
                 if (TempData["viewModel"] == null)
                 {
+                    string Sresponse = HttpContext.Session.GetString("model");
 
-                    string Sresponse = TempData["model"] as string;
                     int jsonStartIndex = Sresponse.IndexOf("{"); // Find the index of the opening brace of the JSON object
                     string jsonOnly = Sresponse.Substring(jsonStartIndex); // Extract the JSON part
                     Sresponse = jsonOnly;
+                    var parsedJson = JObject.Parse(Sresponse);
+                    JObject filteredJson = new JObject(
+                        new JProperty("Company", parsedJson["Company"]),
+                        new JProperty("invoice_number", parsedJson["invoice_number"]),
+                        new JProperty("Invoice_Date", parsedJson["Invoice_Date"]),
+                        new JProperty("Subtotal", parsedJson["Subtotal"]),
+                        new JProperty("Tax", parsedJson["Tax"]),
+                        new JProperty("Total", parsedJson["Total"]),
+                        new JProperty("Items", parsedJson["Items"]),
+                        new JProperty("Currency", parsedJson["Currency"])
+                    );
                     /* using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                      {
                          Sresponse = reader.ReadToEnd();
@@ -175,14 +191,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
                     if (Sresponse.ToLower().Contains("items"))
                     {
-                        viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(Sresponse,_serializerSettings);
-                        if (!await CheckCompany(viewModel.ProductInvoice.Company.Company_Name_English))
-                        {
-                            //name in english is null 
-                            HttpContext.Session.SetString("NextView", "Edit");
-                            TempData["viewModel"] = JsonConvert.SerializeObject(viewModel,_serializerSettings);
-                            return RedirectToAction("Create", "Companies");
-                        }
+                        viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(filteredJson.ToString(), _serializerSettings);
+                        ViewData["Companies"] = new SelectList(SearchRelatedCompanies(viewModel.ProductInvoice.Company.Company_Name), "Company_Name", "Company_Name");
                         var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
                         if (invoiceID != null)
                         {
@@ -202,13 +212,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             }
                             else
                             {
-                                SelectListItem listItem = new SelectListItem { 
+                                SelectListItem listItem = new SelectListItem {
                                     Text = item.Bestmatch,
                                     Value = item.Bestmatch,
                                 };
                                 optionsList.Add(listItem);
-                                HttpContext.Session.SetString("ProductInvoice",JsonConvert.SerializeObject(viewModel, _serializerSettings).ToString());
+                                HttpContext.Session.SetString("ProductInvoice", JsonConvert.SerializeObject(viewModel, _serializerSettings).ToString());
                                 InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(item.Product)).FirstOrDefault();
+                                if (Item == null)
+                                {
+
+                                }
                                 Product product1 = new Product();
                                 product1.Name = Item.Name;
                                 product1.CostPrice = Item.UnitPrice;
@@ -221,11 +235,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
                                  return RedirectToAction("Create", "Products");*/
                             }
-                            
-                        }
-                        
-                        HttpContext.Session.SetString("Product", JsonConvert.SerializeObject(missingProducts.DistinctBy(p=> p.Name)));
 
+                        }
+
+                        HttpContext.Session.SetString("Product", JsonConvert.SerializeObject(missingProducts.DistinctBy(p => p.Name)));
+                        HttpContext.Session.SetString("ViewModel", JsonConvert.SerializeObject(viewModel));
                         ViewData["select"] = new SelectList(optionsList, "Value", "Text");
 
                     }
@@ -240,9 +254,9 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             return RedirectToAction(nameof(Index));
                         }
                     }
-                    byte[] imageBytes = HttpContext.Session.Get("image");
-                    string base64Image = Convert.ToBase64String(imageBytes);
-                    ViewBag.Base64Image = base64Image;
+
+                    string base64Image = HttpContext.Session.GetString("image");
+                    ViewBag.Base64Image = base64Image.ToString();
 
                     return View(viewModel);
                 }
@@ -250,8 +264,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
                     InvoiceViewModel invoiceView = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
 
-                    byte[] imageBytes = HttpContext.Session.Get("image");
-                    string base64Image = Convert.ToBase64String(imageBytes);
+                   
+                    string base64Image = HttpContext.Session.GetString("image");
                     ViewBag.Base64Image = base64Image;
 
                     return View(invoiceView);
@@ -276,7 +290,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 //TODO: Add Toastr Notifications
                 _logger.LogError(ModelState.ToString());
+                HttpContext.Session.Remove("model");
+                HttpContext.Session.Remove("image");
+                HttpContext.Session.Remove("Product");
+                HttpContext.Session.Remove("ViewModel");
                 return RedirectToAction(nameof(Create));
+                
             }
             else
             {
@@ -361,6 +380,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         invoice.Invoice_Type = SD.InvoiceProduct;
                         invoice.CompanyID = company;
                         _context.ProductInvoices.Add(invoice);
+                        HttpContext.Session.Remove("model");
+                        HttpContext.Session.Remove("image");
+                        HttpContext.Session.Remove("Product");
+                        HttpContext.Session.Remove("ViewModel");
                         await _context.SaveChangesAsync();
 
                     }
@@ -692,8 +715,9 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
 
                 }
+                InValid.AddRange(keyValuePairs.Where(p => string.IsNullOrEmpty(p.Value)).Select(p => p.Key));
                 keyValuePairs.RemoveWhere(pair => string.IsNullOrEmpty(pair.Value));
-
+                
                 //TODO : if it found everything in the items 
                 if (uniqueMatches.Count >= items.Count ) {
                     List<ProductMatches> productMatches = new List<ProductMatches>();
@@ -713,49 +737,56 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 if (uniqueMatches.Count > 0)
                 {
 
-
+                    List<ProductMatches> productMatches = new List<ProductMatches>();
+                    foreach (var item in keyValuePairs)
+                    {
+                        ProductMatches matches1 = new ProductMatches();
+                        matches1.Product = item.Key;
+                        matches1.Bestmatch = item.Value;
+                        matches1.Invoiceproduct = _context.Products.Where(p => p.Name.Equals(item.Value)).FirstOrDefault();
+                        productMatches.Add(matches1);
+                    }
                     /* found some products not all */
+                    List<string> matches = new List<string>();
+                    
                     foreach (string nonExistingProductName in InValid)
                     {
                         if (toBeRemovedFromInValid.Contains(nonExistingProductName))
                         {
                             continue;
                         }
-                        List<string> matches;
-                        matches = SearchByThreshold(30, nonExistingProductName, uniqueMatches.ToList());
+                        matches = SearchByThreshold(nonExistingProductName.Length, nonExistingProductName, potentialMatchesTrial);
                         if (matches.Count == 0)
                         {
                             matches = SearchByThreshold(45, nonExistingProductName, potentialMatchesTrial);
                         }
 
-                        uniqueMatches.AddRange(matches);
+
+                       
+
                     }
-                  
                     /* TODO: Call GPT to return each product and its possible name if not equal should return null */
-                    var result = await GPTCValidateItems(uniqueMatches.ToList(), InValid.ToList());
-                    /*string result;
-                    using (StreamReader reader = new StreamReader("./Test Files/ProductResponse.json"))
+                    if (matches.Count != 0)
                     {
-                        result = reader.ReadToEnd();
-                    }*/
-                   
-                    List<ProductMatches> productMatches = JsonConvert.DeserializeObject<ListProductMatches>(result).ProductMatches;
-                    InValid.Clear();
-                    foreach (var product in productMatches)
-                    {
-                        if(product.Bestmatch == null)
+                        var result = await GPTCValidateItems(matches.ToList(), InValid.ToList());
+
+                        int jsonStartIndex = result.IndexOf("{"); // Find the index of the opening brace of the JSON object
+                        string jsonOnly = result.Substring(jsonStartIndex); // Extract the JSON part
+                        result = jsonOnly;
+                        try
                         {
-                            InValid.Add(product.Product);
+                            JObject parsedJson = JObject.Parse(result);
+                            JObject filteredjson = new JObject(
+                                new JProperty("ProductMatches", parsedJson["ProductMatches"]));
+                            productMatches.AddRange(JsonConvert.DeserializeObject<ListProductMatches>(filteredjson.ToString()).ProductMatches);
+                         
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            // assign the product to its value
-                            Product x =await  _context.Products.Where(p => p.Name.Equals(product.Bestmatch)).FirstOrDefaultAsync();
-                            product.Invoiceproduct= x;
-                            
 
                         }
                     }
+                    
                     return (productMatches);
 
 
@@ -773,13 +804,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         {
                             matches = SearchByThreshold((int)Math.Floor(nonExistingProductName.Length*1.5), nonExistingProductName, potentialMatchesTrial);                            if (matches.Count != 0)
                             {
-                                InValid.Remove(nonExistingProductName);
+                                
                             }
                         }
                         else
                         {
                             //Should not remove but replace and then remove 
-                            InValid.Remove(nonExistingProductName);
+                            
                         }
                        
                         foreach (var item in matches.ToList())
@@ -897,16 +928,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 
             
         }
-        public  List<Product> SearchRelatedProducts(string product)
+        public  List<Company> SearchRelatedCompanies(string product)
         {
             if (product.Split(" ").Length > 1) {
                 var words = product.Split(" ");
-                var result =  _context.Products.Where(p => EF.Functions.Like(p.Name, "%" + words[0] + "%") || EF.Functions.Like(p.Name, "%" + words[1] + "%")).ToList();
+                var result =  _context.Companies.Where(p => p.Company_Name.Contains(words[0]+" "+ words[1])).ToList();
+                
                 return result;
             }
             else if(product.Split(" ").Length == 1)
             {
-                var result = _context.Products.Where(p => EF.Functions.Like(p.Name, "%" + product + "%")).ToList();
+                var result = _context.Companies.Where(p => p.Company_Name.Contains(product)).ToList();
                 return result;
             }
             return null;

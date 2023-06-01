@@ -25,6 +25,53 @@ form.addEventListener('submit', function (event) {
         form.submit();
     }
 });
+document.addEventListener('submit', function (event) {
+    var form = event.target.closest("#CreateCompanyPartial");
+    if (form) {
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+            form.classList.add("was-validated")
+        }
+        else {
+            event.preventDefault();
+            event.stopPropagation();
+            var formData = $("#CreateCompanyPartial").serializeArray();
+            var convertedData = {};
+
+            var formDataObj = Object.fromEntries(new FormData(event.target).entries());
+            var x = JSON.stringify(formDataObj);
+            formData.forEach(function (field) {
+                switch (field.name) {
+                    case "Price":
+                    case "CostPrice":
+                        convertedData[field.name] = parseFloat(field.value);
+                        break;
+                    case "IsAvailable":
+                    case "IsActive":
+                        convertedData[field.name] = field.value === "true";
+                        break;
+                    default:
+                        convertedData[field.name] = field.value;
+                }
+            });
+
+            $.ajax({
+                url: "/Accountant/Companies/SubmitCompany",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(formDataObj),
+                success: function (data) {
+                    $("#CreateCompany").modal("hide");
+                    document.getElementById("Company_Name").classList.add("is-valid");
+                    $(".add-company-btn").hide();
+                    toastr["success"]("Company was Created !");
+                }
+            });
+        }
+
+    }
+});
 
 document.addEventListener('submit', function (event) {
     var form = event.target.closest("#CreateProductPartial");
@@ -97,8 +144,8 @@ document.addEventListener('submit', function (event) {
        
     }
 });
-function closePopUp() {
-    $("#myModal").modal("hide");
+function closePopUp(clickedButton) {
+    $(clickedButton).closest(".modal").modal("hide");
 
 }
 var usingItem;
@@ -108,9 +155,30 @@ $(document).ready(function () {
         var itemId = $(this).data("item-id");
         usingItem = itemId;
         myfunction2(itemId);
-    });
+    }),
+        $(".add-company-btn").click(function (event) {
+            event.preventDefault();
+            InitCompany();
+        });
+    
     
 });
+
+function InitCompany() {
+    $.ajax({
+        url: "/Accountant/Companies/InitCompanyPartial",
+        method: "GET",
+        success: function (data) {
+            if (data != null) {
+                $("#CreateCompany .modal-body").html(data);
+                $("#CreateCompany").modal("show");
+            }
+        },
+        error: function (error) {
+            alert(error);
+        }
+    });
+}
 
 
 /*
