@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Smart_Invoice.Models.Products;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,10 +30,12 @@ namespace Smart_Invoice.Models.Invoices
         [JsonProperty("Total")]
         [DefaultValue(0.0)]
         public double Total { get; set; }
-
-
+        [ForeignKey("ProductId")]
+        public int? productId { get; set; }
+        public virtual Product? Product { get; set; }
         public int ProductInvoiceId { get; set; }
         [ForeignKey("ProductInvoiceId")]
         public virtual Product_Invoice ProductInvoice { get; set; }
+        
     }
 }

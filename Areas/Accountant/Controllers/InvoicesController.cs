@@ -172,16 +172,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     int jsonStartIndex = Sresponse.IndexOf("{"); // Find the index of the opening brace of the JSON object
                     string jsonOnly = Sresponse.Substring(jsonStartIndex); // Extract the JSON part
                     Sresponse = jsonOnly;
-                    var parsedJson = JObject.Parse(Sresponse);
+                    var parsedJson = JObject.Parse(Sresponse.ToLower());
                     JObject filteredJson = new JObject(
-                        new JProperty("Company", parsedJson["Company"]),
+                        new JProperty("Company", parsedJson["company"]),
                         new JProperty("invoice_number", parsedJson["invoice_number"]),
-                        new JProperty("Invoice_Date", parsedJson["Invoice_Date"]),
-                        new JProperty("Subtotal", parsedJson["Subtotal"]),
-                        new JProperty("Tax", parsedJson["Tax"]),
-                        new JProperty("Total", parsedJson["Total"]),
-                        new JProperty("Items", parsedJson["Items"]),
-                        new JProperty("Currency", parsedJson["Currency"])
+                        new JProperty("Invoice_Date", parsedJson["invoice_date"]),
+                        new JProperty("Subtotal", parsedJson["subtotal"]),
+                        new JProperty("Tax", parsedJson["tax"]),
+                        new JProperty("Total", parsedJson["total"]),
+                        new JProperty("Items", parsedJson["items"]),
+                        new JProperty("Currency", parsedJson["currency"])
                     );
                     /* using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                      {
@@ -218,18 +218,21 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                                 };
                                 optionsList.Add(listItem);
                                 HttpContext.Session.SetString("ProductInvoice", JsonConvert.SerializeObject(viewModel, _serializerSettings).ToString());
-                                InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(item.Product)).FirstOrDefault();
+                                InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.ToLower().Contains(item.Product.ToLower())).FirstOrDefault();
                                 if (Item == null)
                                 {
 
                                 }
-                                Product product1 = new Product();
-                                product1.Name = Item.Name;
-                                product1.CostPrice = Item.UnitPrice;
-                                product1.Price = Item.UnitPrice + (Item.UnitPrice * 0.16);
-                                product1.CreatedDate = DateTime.Now;
-                                product1.UpdatedDate = DateTime.Now;
-                                missingProducts.Add(product1);
+                                else
+                                {
+                                    Product product1 = new Product();
+                                    product1.Name = Item.Name;
+                                    product1.CostPrice = Item.UnitPrice;
+                                    product1.Price = Item.UnitPrice + (Item.UnitPrice * 0.16);
+                                    product1.CreatedDate = DateTime.Now;
+                                    product1.UpdatedDate = DateTime.Now;
+                                    missingProducts.Add(product1);
+                                }
                                 /* HttpContext.Session.SetString("NextView", "Edit");
 
 
@@ -932,13 +935,20 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             if (product.Split(" ").Length > 1) {
                 var words = product.Split(" ");
-                var result =  _context.Companies.Where(p => p.Company_Name.Contains(words[0]+" "+ words[1])).ToList();
-                
+                var result =  _context.Companies.Where(p => p.Company_Name.ToLower().Contains(words[0]+" "+ words[1])).ToList();
+                if(result.Count == 0)
+                {
+                    result = _context.Companies.ToList();
+                }
                 return result;
             }
             else if(product.Split(" ").Length == 1)
             {
-                var result = _context.Companies.Where(p => p.Company_Name.Contains(product)).ToList();
+                var result = _context.Companies.Where(p => p.Company_Name.ToLower().Contains(product)).ToList();
+                if (result.Count == 0)
+                {
+                    result = _context.Companies.ToList();
+                }
                 return result;
             }
             return null;

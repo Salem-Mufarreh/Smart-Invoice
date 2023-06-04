@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Cloud.Vision.V1;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RestSharp;
 using Smart_Invoice.Data;
+using Smart_Invoice.Models;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
+using System.Linq;
 using System.Net;
 using System.Text.Json.Nodes;
+using Product = Smart_Invoice.Models.Products.Product;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
 {
@@ -252,6 +256,43 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
 
             return sku;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> getCommonProducts(string? company)
+        {
+            List<Models.Products.Product> products = new List<Product>();
+            if (company == null)
+            {
+                products = _context.Products.ToList<Product>();
+                return Ok(new { data = products});
+            }
+            else {
+                
+                Company comp = _context.Companies.Where(c => c.Company_Name_English.Equals(company) || c.Company_Name.Equals(company)).FirstOrDefault();
+                if (comp != null)
+                {
+                    var InvoicesIds = _context.Invoices.Where(I => I.Company.CompanyId == comp.CompanyId).Select(i => i.Invoice_Id).ToList();
+                    if (InvoicesIds.Count == 0)
+                    {
+                        var product = _context.Products.Select(p=> p.Name).ToArray();
+                        return Ok(new { data = product });
+                    }
+                    else
+                    {
+                        var c = (from ii in _context.InvoiceItem
+                                 join i in _context.Invoices on ii.ProductInvoiceId equals i.Id
+                                 where i.Company.CompanyId == comp.CompanyId
+                                 select ii).ToList();
+                      
+                        return Ok(new { data = c.Select(i => i.Name ).ToArray()});
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
         }
 
         #endregion
