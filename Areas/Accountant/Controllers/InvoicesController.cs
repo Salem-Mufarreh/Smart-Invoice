@@ -338,7 +338,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 else
                 {
-                    if (rawInvoice.Keys.Contains("Product 0") || rawInvoice.Keys.Contains("UnitPrice 0"))
+                    if (rawInvoice.Keys.Any(k=> k.StartsWith("Product")) || rawInvoice.Keys.Any(k=> k.StartsWith("UnitPrice")))
                     {
                         Product_Invoice invoice = new Product_Invoice();
                         List<InvoiceItem> items = new List<InvoiceItem>();
@@ -364,11 +364,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             else if (item.StartsWith("Product"))
                             {
                                 InvoiceItem itemInvoice = new InvoiceItem();
-                                itemInvoice.Name = rawInvoice["Product "+i];
-                                itemInvoice.Unit = rawInvoice["Unit " + i];
-                                itemInvoice.UnitPrice = Double.Parse(rawInvoice["UnitPrice " + i]);
-                                itemInvoice.Quantity = Int32.Parse(rawInvoice["Quantity " + i]);
-                                itemInvoice.Total = Double.Parse(rawInvoice["Total "+i]);
+                                itemInvoice.Name = rawInvoice["Product_"+i];
+                                itemInvoice.Unit = rawInvoice["Unit_" + i];
+                                itemInvoice.UnitPrice = Double.Parse(rawInvoice["UnitPrice_" + i]);
+                                itemInvoice.Quantity = Int32.Parse(rawInvoice["Quantity_" + i]);
+                                itemInvoice.Total = Double.Parse(rawInvoice["Total_"+i]);
+                                itemInvoice.productId = _context.Products.Where(p => p.Name.Contains(itemInvoice.Name)).Select(p => p.ProductId).FirstOrDefault();
                                 i++;
                                 items.Add(itemInvoice);
                             }
@@ -376,7 +377,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         
                         var company = _context.Companies.Where(c => c.Company_Name.
                                 Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
-                        //TODO if company is null Create a new company 
+                     
                         invoice.Company = company;
                         invoice.Items = items.ToArray();
                         invoice.Invoice_Id = Guid.NewGuid().ToString();
@@ -584,6 +585,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public async Task<string> VisionExtract(Image image)
         {
             ImageAnnotatorClient client = ImageAnnotatorClient.Create();
+            
             //Image image = Image.FromFile("./Modified Images/IMG_3205.jpg");
             TextAnnotation text = await client.DetectDocumentTextAsync(image);
             

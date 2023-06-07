@@ -1,16 +1,12 @@
-﻿using Google.Cloud.Vision.V1;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using RestSharp;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
-using System.Linq;
-using System.Net;
-using System.Text.Json.Nodes;
+using System.Text;
 using Product = Smart_Invoice.Models.Products.Product;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
@@ -294,7 +290,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
             }
         }
-
+       
         #endregion
     }
 

@@ -77,7 +77,7 @@
                                     if (productMatch != null && productMatch.Invoiceproduct != null)
                                     {
                                         <div class="form-floating has-validation" style="margin-bottom:0.5em">
-                                            <input class="form-control is-valid" id="Product @product.Name" name="Product @i" aria-required="true" value="@productMatch.Invoiceproduct.Name" readonly required/>
+                                            <input class="form-control is-valid" id="Product @product.Name" name="Product_@i" aria-required="true" value="@productMatch.Invoiceproduct.Name" readonly required/>
                                             <label>Product Name</label>
                                         </div>
                                     }
@@ -105,19 +105,19 @@
                                 }
                                 
                                 <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control " id="Unit_@i" name="Unit @i" aria-required="true" value="@product.Unit" required/>
+                                    <input class="form-control " id="Unit_@i" name="Unit_@i" aria-required="true" value="@product.Unit" required/>
                                     <label>Unit</label>
                                 </div>
                                 <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="UnitPrice_@i" name="UnitPrice @i" aria-required="true" value="@product.UnitPrice" required/>
+                                    <input class="form-control" id="UnitPrice_@i" name="UnitPrice_@i" aria-required="true" value="@product.UnitPrice" required/>
                                     <label>Unit Price</label>
                                 </div>
                                 <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="Quantity_@i" name="Quantity @i" aria-required="true" value="@product.Quantity" required/>
+                                    <input class="form-control" id="Quantity_@i" name="Quantity_@i" aria-required="true" value="@product.Quantity" required/>
                                     <label>Quantity</label>
                                 </div>
                                 <div class="form-floating has-validation" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="Total_@i" name="Total @i" aria-required="true" value="@product.Total" required/>
+                                    <input class="form-control" id="Total_@i" name="Total_@i" aria-required="true" value="@product.Total" required/>
                                     <label>Total</label>
                                     <div class="invalid-tooltip"> Check the prices again</div>
                                 </div>
