@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Smart_Invoice.Models.Registered_Companies;
 using Smart_Invoice.Utility;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -42,5 +43,10 @@ namespace Smart_Invoice.Models.Invoices
         public Company? CompanyID { get; set; }
 
         public Company? Company { get; set; }
+
+        [ForeignKey("CompanyCode")]
+        public long? CompanyCode { get; set; }
+        public virtual RegisteredCompany? RegisteredCompany { get; set; }
+
     }
 }

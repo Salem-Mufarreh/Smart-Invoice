@@ -1,13 +1,14 @@
-﻿using Google.Cloud.DocumentAI.V1;
+﻿using Amazon.Runtime;
+using Amazon.Textract;
+using Google.Apis.Storage.v1.Data;
+using Google.Cloud.DocumentAI.V1;
 using Google.Cloud.Storage.V1;
 using Google.Cloud.Vision.V1;
 using Google.Protobuf;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,15 +18,12 @@ using Smart_Invoice.Data;
 using Smart_Invoice.Models;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
+using Smart_Invoice.Models.Stock;
+using Smart_Invoice.Models.Warehouse;
 using Smart_Invoice.Utility;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
-using System.Web.Helpers;
-using static Google.Apis.Requests.BatchRequest;
-using static Google.Rpc.Context.AttributeContext.Types;
 using Image = Google.Cloud.Vision.V1.Image;
 using Product = Smart_Invoice.Models.Products.Product;
 
@@ -39,7 +37,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         private readonly ILogger<LoginModel> _logger;
         private readonly string _OpenAi;
         private readonly JsonSerializerSettings _serializerSettings;
-        
+        private readonly AWSCredentials _awsCredentails;
         public InvoicesController(ApplicationDbContext context, ILogger<LoginModel> logger, IOptions<OpenAiSettings> settings)
         {
             _context = context;
@@ -50,14 +48,19 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = DefaultValueHandling.Include,
             };
+            var chain = new Amazon.Runtime.CredentialManagement.CredentialProfileStoreChain();
+            if(!chain.TryGetAWSCredentials("default",out _awsCredentails))
+            {
+                throw new Exception("aws credentails ");
+            }
         }
 
         // GET: Accountant/Invoices
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Invoices.Include(i=> i.CompanyID);
+            var applicationDbContext = _context.Invoices.Include(i => i.CompanyID);
             List<Invoice> invoices = await applicationDbContext.ToListAsync<Invoice>();
-            
+
             return View(invoices);
         }
 
@@ -76,10 +79,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
             if (invoice is Product_Invoice product_Invoice)
             {
-                invoice = await _context.ProductInvoices.Include(d=>d.Items).FirstOrDefaultAsync(m=> m.Id.Equals(id));
+                invoice = await _context.ProductInvoices.Include(d => d.Items).FirstOrDefaultAsync(m => m.Id.Equals(id));
                 invoiceViewModel.ProductInvoice = (Product_Invoice)invoice;
             }
-            else if(invoice is UtilityInvoice utility)
+            else if (invoice is UtilityInvoice utility)
             {
                 invoice = await _context.UtilityInvoices.FirstOrDefaultAsync(m => m.Id == id);
                 invoiceViewModel.UtilityInvoice = (UtilityInvoice)invoice;
@@ -96,7 +99,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Address");
-            
+
 
             return View();
         }
@@ -110,7 +113,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
             try
             {
-                
+
 
                 using (var stream = file.OpenReadStream())
                 {
@@ -153,16 +156,16 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 _logger.LogError(ex.Message);
             }
             return View();
-           
-           
+
+
         }
 
-       
+
 
         // GET: Accountant/Invoices/Edit/5
         public async Task<IActionResult> Edit()
         {
-        
+
             try
             {
                 if (TempData["viewModel"] == null)
@@ -212,7 +215,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             }
                             else
                             {
-                                SelectListItem listItem = new SelectListItem {
+                                SelectListItem listItem = new SelectListItem
+                                {
                                     Text = item.Bestmatch,
                                     Value = item.Bestmatch,
                                 };
@@ -267,14 +271,15 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
                     InvoiceViewModel invoiceView = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
 
-                   
+
                     string base64Image = HttpContext.Session.GetString("image");
                     ViewBag.Base64Image = base64Image;
 
                     return View(invoiceView);
                 }
-            
-            }catch(Exception ex)
+
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return View(new InvoiceViewModel());
@@ -288,7 +293,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(IFormCollection rawInvoice)
         {
-            
+
             if (!ModelState.IsValid)
             {
                 //TODO: Add Toastr Notifications
@@ -298,7 +303,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 HttpContext.Session.Remove("Product");
                 HttpContext.Session.Remove("ViewModel");
                 return RedirectToAction(nameof(Create));
-                
+
             }
             else
             {
@@ -314,12 +319,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         if (property != null)
                         {
                             var value = rawInvoice[item].ToString();
-                            if(property.Name.Contains("Total") || property.Name.Contains("Tax")
+                            if (property.Name.Contains("Total") || property.Name.Contains("Tax")
                                 || property.Name.Contains("Subtotal"))
                             {
                                 property.SetValue(invoice, Double.Parse(value));
                             }
-                            else { 
+                            else
+                            {
                                 property.SetValue(invoice, value.Normalize());
                             }
                         }
@@ -338,10 +344,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 else
                 {
-                    if (rawInvoice.Keys.Any(k=> k.StartsWith("Product")) || rawInvoice.Keys.Any(k=> k.StartsWith("UnitPrice")))
+                    if (rawInvoice.Keys.Any(k => k.StartsWith("Product")) || rawInvoice.Keys.Any(k => k.StartsWith("UnitPrice")))
                     {
                         Product_Invoice invoice = new Product_Invoice();
                         List<InvoiceItem> items = new List<InvoiceItem>();
+                        List<Inventory> inventories = new List<Inventory>();
                         var i = 0;
                         foreach (var item in rawInvoice.Keys)
                         {
@@ -349,41 +356,75 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             if (property != null)
                             {
                                 var value = rawInvoice[item].ToString();
-                                if ( property.Name.Contains("Tax") || property.Name.Contains("Total")
+                                if (property.Name.Contains("Tax") || property.Name.Contains("Total")
                                     || property.Name.Contains("Subtotal"))
                                 {
                                     property.SetValue(invoice, Double.Parse(value));
                                 }
-                                
+
                                 else
                                 {
                                     property.SetValue(invoice, value.Normalize());
                                 }
-                                
+
                             }
                             else if (item.StartsWith("Product"))
                             {
+                                Inventory inventory = new Inventory();
+
                                 InvoiceItem itemInvoice = new InvoiceItem();
-                                itemInvoice.Name = rawInvoice["Product_"+i];
+                                itemInvoice.Name = rawInvoice["Product_" + i];
                                 itemInvoice.Unit = rawInvoice["Unit_" + i];
                                 itemInvoice.UnitPrice = Double.Parse(rawInvoice["UnitPrice_" + i]);
                                 itemInvoice.Quantity = Int32.Parse(rawInvoice["Quantity_" + i]);
-                                itemInvoice.Total = Double.Parse(rawInvoice["Total_"+i]);
+                                itemInvoice.Total = Double.Parse(rawInvoice["Total_" + i]);
                                 itemInvoice.productId = _context.Products.Where(p => p.Name.Contains(itemInvoice.Name)).Select(p => p.ProductId).FirstOrDefault();
+                                if (itemInvoice.productId != null)
+                                {
+                                     inventory = _context.Inventories.Where(i => i.ProductId.Equals(itemInvoice.productId)).FirstOrDefault();
+                                    if (inventory != null)
+                                    {
+                                        inventory.ProductCount = (int)itemInvoice.Quantity;
+                                        inventory.PurchaseDate = DateTime.UtcNow;
+                                        inventory.LastUpdated = DateTime.UtcNow;
+                                        inventory.SKU = "as";
+                                        inventory.ProductId = (int)itemInvoice.productId;
+                                        inventory.SellingPrice = itemInvoice.Total + (itemInvoice.Total + 0.16);
+                                        Warehouse warehouse = _context.Warehouses.Find(1);
+                                        warehouse.AvailableSpace = warehouse.AvailableSpace - (int)itemInvoice.Quantity;
+                                        warehouse.OccupancyRate = warehouse.Capacity / warehouse.AvailableSpace;
+
+                                    }
+                                    else
+                                    {
+                                        inventory = new Inventory();
+                                        inventory.ProductCount = inventory.ProductCount + (int)itemInvoice.Quantity;
+                                        inventory.PurchaseDate = DateTime.UtcNow;
+                                        inventory.LastUpdated = DateTime.UtcNow;
+                                        inventory.ProductId = (int)itemInvoice.productId;
+                                        inventory.SKU = "as";
+                                        inventory.SellingPrice = itemInvoice.Total + (itemInvoice.Total + 0.16);
+                                        Warehouse warehouse = _context.Warehouses.Find(1);
+                                        warehouse.AvailableSpace = warehouse.AvailableSpace - (int)itemInvoice.Quantity;
+                                        warehouse.OccupancyRate = warehouse.Capacity / warehouse.AvailableSpace;
+                                    }
+                                }
                                 i++;
                                 items.Add(itemInvoice);
+                                inventories.Add(inventory);
                             }
                         }
-                        
+
                         var company = _context.Companies.Where(c => c.Company_Name.
                                 Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
-                     
+
                         invoice.Company = company;
                         invoice.Items = items.ToArray();
                         invoice.Invoice_Id = Guid.NewGuid().ToString();
                         invoice.Invoice_Type = SD.InvoiceProduct;
                         invoice.CompanyID = company;
                         _context.ProductInvoices.Add(invoice);
+                        _context.Inventories.AddRange(inventories);
                         HttpContext.Session.Remove("model");
                         HttpContext.Session.Remove("image");
                         HttpContext.Session.Remove("Product");
@@ -399,8 +440,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return RedirectToAction(nameof(Index));
                 //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }
-           
-           
+
+
         }
 
         // GET: Accountant/Invoices/Delete/5
@@ -436,14 +477,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 _context.Invoices.Remove(invoice);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool InvoiceExists(int id)
         {
-          return (_context.Invoices?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Invoices?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
         #region APICalls
@@ -476,7 +517,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 {
                     // Handle the exception and return an error response
                     _logger.LogTrace(StatusCodes.Status500InternalServerError, ex.Message);
-                    return false ;
+                    return false;
                 }
             }
             else
@@ -485,12 +526,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return false;
             }
         }
-        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice (IFormFile file)
+        public async Task<Google.Cloud.DocumentAI.V1.Document> ExtractInvoice(IFormFile file)
         {
             const string projectId = "document-ea-369818";
             const string locationId = "eu";
             const string processorId = "578778ce00c7a18";
-            const string mimeType = "image/png";
+            const string mimeType = "image/jpg";
             // Create client
             var client = new DocumentProcessorServiceClientBuilder
             {
@@ -521,8 +562,9 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 var pageAnchor = pagelayout.TextAnchor;
                 var x = pageAnchor.TextSegments[0].StartIndex;
                 var y = document.Pages[0].Blocks;
+                var table = response.Document.Pages[0].Tables[0];
 
-                
+
 
 
                 return document;
@@ -535,18 +577,18 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return null;
         }
 
-        
+
 
         public async Task<string> CallOpenAi(string rawdocument)
         {
-            
-            var prompt =  SD.Productprompt_v2+rawdocument;
+
+            var prompt = SD.Productprompt_v2 + rawdocument;
             var apiKey = _OpenAi;
             var model = "text-davinci-003";
 
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            var data = new { prompt = prompt, model = model , max_tokens = 1500};
+            var data = new { prompt = prompt, model = model, max_tokens = 1500 };
             var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
             var response = await client.PostAsync("https://api.openai.com/v1/completions", content);
 
@@ -558,12 +600,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return text;
 
         }
-        public async Task<string> GPTCValidateItems(List<string>potentialMatches, List<string> products)
+        public async Task<string> GPTCValidateItems(List<string> potentialMatches, List<string> products)
         {
             var productsString = string.Join(", ", products);
             var potentialMatchesString = string.Join(", ", potentialMatches);
-            var prompt = SD.CheckForItemsPrompt + " Invoice_product[ " + productsString+
-                "] and database_products: [" + potentialMatchesString +"] " + SD.CheckForItemsPromptC ;
+            var prompt = SD.CheckForItemsPrompt + " Invoice_product[ " + productsString +
+                "] and database_products: [" + potentialMatchesString + "] " + SD.CheckForItemsPromptC;
             var apiKey = _OpenAi;
             var model = "text-davinci-003";
 
@@ -581,18 +623,90 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             var text = choices["text"].ToString();
             return text;
         }
-
+        /* Extract the Document/Image Text using OCR  */
         public async Task<string> VisionExtract(Image image)
         {
-            ImageAnnotatorClient client = ImageAnnotatorClient.Create();
             
+            ImageAnnotatorClient client =  ImageAnnotatorClient.Create();
+            //TODO: use text annotator and search for the block type table  
             //Image image = Image.FromFile("./Modified Images/IMG_3205.jpg");
-            TextAnnotation text = await client.DetectDocumentTextAsync(image);
+            AnnotateImageRequest request = new AnnotateImageRequest();
             
-            return text.Text;
+            request.Image = image;
+            request.Features.Add(new Feature
+            {
+                Type = Feature.Types.Type.DocumentTextDetection,
+                
+            });
+            AnnotateImageResponse response = client.Annotate(request);
+
+
+            var structuredText = RestructureTextWithVertices(response.FullTextAnnotation.Pages[0].Blocks.ToList());            
+            return structuredText;
         }
 
-        public Task<string> CheckInvoicePrices( InvoiceViewModel viewModel)
+        /* This Method will take all the block in the response and reformat the text accourding to the x-y coordenates which will help the 
+            GPT model to construct the product table and know excatly the product names and their prices so no conflict will appear */
+        public static string RestructureTextWithVertices(List<Google.Cloud.Vision.V1.Block> extractedText)
+        {
+            // Sort extracted text elements based on x-coordinate
+            var sortedText = extractedText.OrderBy(elem => elem.BoundingBox.Vertices[0].X).ToList();
+            // Group elements with overlapping y-coordinate
+            var lines = new List<List<Google.Cloud.Vision.V1.Block>>();
+            var currentLine = new List<Google.Cloud.Vision.V1.Block> { sortedText[0] };
+            for (int i = 1; i < sortedText.Count; i++)
+            {
+                var currentBox = sortedText[i].BoundingBox;
+                var previousBox = sortedText[i - 1].BoundingBox;
+                if (currentBox.Vertices[0].Y == previousBox.Vertices[1].Y)
+                {
+                    currentLine.Add(sortedText[i]);
+                }
+                else
+                {
+                    lines.Add(currentLine);
+                    currentLine = new List<Google.Cloud.Vision.V1.Block> { sortedText[i] };
+                }
+            }
+            lines.Add(currentLine);
+
+            // Sort elements within each line based on x-coordinate
+            foreach (var line in lines)
+            {
+                line.Sort((elem1, elem2) => elem1.BoundingBox.Vertices[0].X.CompareTo(elem2.BoundingBox.Vertices[0].X));
+            }
+            List<string> document = new List<string>();
+            foreach(var line in lines)
+            {
+                List<string> blocks = new List<string>();
+                foreach(var block in line)
+                {
+                    List<string> paragraphs = new List<string>();
+                    foreach (var paragraph in block.Paragraphs)
+                    {
+                        List<string> words = new List<string>();
+                        foreach (var word in paragraph.Words)
+                        {
+                            words.Add(string.Join("", word.Symbols.Select(e=> e.Text)));
+                        }
+                        //line
+                        paragraphs.Add(string.Join(" ",words));
+                    }
+                    //n
+                   blocks.Add(string.Join("\n",paragraphs));
+                }
+                document.Add("\n");
+                document.Add(string.Join(" \n ", blocks));
+                document.Add("\t");
+            }
+            // Concatenate text elements within each line
+
+            return string.Join("", document);
+        }
+
+
+
+        public Task<string> CheckInvoicePrices(InvoiceViewModel viewModel)
         {
             List<string> Valid = new List<string>();
             List<string> inValid = new List<string>();
@@ -663,38 +777,39 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             return null;
         }
        
+
         public async Task<Boolean> CheckCompany(string companyName)
         {
             if (!string.IsNullOrEmpty(companyName))
             {
-                var company =await _context.Companies.Where(c=> EF.Functions.Like(c.Company_Name_English, "%" +companyName.ToLower() +"%")).FirstOrDefaultAsync();
+                var company = await _context.Companies.Where(c => EF.Functions.Like(c.Company_Name_English, "%" + companyName.ToLower() + "%")).FirstOrDefaultAsync();
                 if (company != null)
                 {
                     return true;
                 }
-               
+
             }
-            
-                return false;
-            
+
+            return false;
+
         }
 
-        public async Task< List<ProductMatches> > CheckItems(Smart_Invoice.Models.Invoices.Product_Invoice Invoices) 
+        public async Task<List<ProductMatches>> CheckItems(Smart_Invoice.Models.Invoices.Product_Invoice Invoices)
         {
             List<string> InValid = new List<string>();
             List<Product> Valid = new List<Product>();
-            if (Invoices != null && Invoices.Items != null )
+            if (Invoices != null && Invoices.Items != null)
             {
                 List<string> items = Invoices.Items.Select(n => n.Name).ToList();
                 /*int batchSize = 10;
                 var batches = Enumerable.Range(0, (items.Count + batchSize - 1) / batchSize)
                         .Select(i => items.Skip(i * batchSize).Take(batchSize));
 */
-                
+
                 HashSet<string> uniqueMatches = new HashSet<string>();
                 HashSet<KeyValuePair<string, string>> keyValuePairs = new HashSet<KeyValuePair<string, string>>();
                 List<string> potentialMatchesTrial = new List<string>();
-                List<string>toBeRemovedFromInValid = new List<string>();
+                List<string> toBeRemovedFromInValid = new List<string>();
 
                 foreach (string nonExistingProductName in items)
                 {
@@ -712,7 +827,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         {
                             toBeRemovedFromInValid.Add(nonExistingProductName);
                         }
-                    }catch(Exception ex)
+                    }
+                    catch (Exception ex)
                     {
 
                     }
@@ -722,9 +838,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
                 InValid.AddRange(keyValuePairs.Where(p => string.IsNullOrEmpty(p.Value)).Select(p => p.Key));
                 keyValuePairs.RemoveWhere(pair => string.IsNullOrEmpty(pair.Value));
-                
+
                 //TODO : if it found everything in the items 
-                if (uniqueMatches.Count >= items.Count ) {
+                if (uniqueMatches.Count >= items.Count)
+                {
                     List<ProductMatches> productMatches = new List<ProductMatches>();
                     int flag = 0;
                     foreach (var item in keyValuePairs)
@@ -734,7 +851,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         productTemp.Bestmatch = item.Value;
                         productTemp.Invoiceproduct = _context.Products.Where(p => p.Name.Equals(item.Value)).FirstOrDefault();
                         productTemp.Product = item.Key;
-                        flag ++;
+                        flag++;
                         productMatches.Add(productTemp);
                     }
                     return productMatches;
@@ -753,7 +870,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     }
                     /* found some products not all */
                     List<string> matches = new List<string>();
-                    
+
                     foreach (string nonExistingProductName in InValid)
                     {
                         if (toBeRemovedFromInValid.Contains(nonExistingProductName))
@@ -767,7 +884,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         }
 
 
-                       
+
 
                     }
                     /* TODO: Call GPT to return each product and its possible name if not equal should return null */
@@ -784,14 +901,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             JObject filteredjson = new JObject(
                                 new JProperty("ProductMatches", parsedJson["ProductMatches"]));
                             productMatches.AddRange(JsonConvert.DeserializeObject<ListProductMatches>(filteredjson.ToString()).ProductMatches);
-                         
+
                         }
                         catch (Exception ex)
                         {
 
                         }
                     }
-                    
+
                     return (productMatches);
 
 
@@ -807,17 +924,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         matches = SearchByThreshold(nonExistingProductName.Length, nonExistingProductName, potentialMatchesTrial);
                         if (matches.Count == 0)
                         {
-                            matches = SearchByThreshold((int)Math.Floor(nonExistingProductName.Length*1.5), nonExistingProductName, potentialMatchesTrial);                            if (matches.Count != 0)
+                            matches = SearchByThreshold((int)Math.Floor(nonExistingProductName.Length * 1.5), nonExistingProductName, potentialMatchesTrial); if (matches.Count != 0)
                             {
-                                
+
                             }
                         }
                         else
                         {
                             //Should not remove but replace and then remove 
-                            
+
                         }
-                       
+
                         foreach (var item in matches.ToList())
                         {
                             ProductMatches product = new ProductMatches();
@@ -826,13 +943,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                             productMatches.Add(product);
                         }
                     }
-                   
+
                     return (productMatches);
 
                 }
             }
             return null;
-            
+
         }
         /* calculate the levenshtein Distance for two strings */
         public int CalculateLevenshteinDistance(string source, string target)
@@ -870,17 +987,18 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         {
 
             var matches = _context.Products.Where(p => p.Name.ToLower().Contains(nonExistingProductName.ToLower()) ||
-            p.Name.ToLower().StartsWith(nonExistingProductName) || 
+            p.Name.ToLower().StartsWith(nonExistingProductName) ||
             p.Name.ToLower().EndsWith(nonExistingProductName)).Select(p => p.Name).ToList();
-            
+
             return matches;
-            
+
 
         }
-
+        /* This method will search the database for the invoice products by splitting the string to two words and searching to 
+            Improve the accuracy of retreiving the product from the databse */
         public List<string> WordSearchCritira(string nonExistingProductName)
         {
-            if(nonExistingProductName == null || nonExistingProductName.Split(" ").Length == 1)
+            if (nonExistingProductName == null || nonExistingProductName.Split(" ").Length == 1)
             {
                 /* the product is one word  */
                 return new List<string>();
@@ -888,8 +1006,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             else
             {
                 var words = nonExistingProductName.ToLower().Split(" ");
-                var searchWord = words[0]+ " "+ words[1];
-                var result = _context.Products.Where(p => p.Name.ToLower().Contains(searchWord)).Select(p=> p.Name).ToList();
+                var searchWord = words[0] + " " + words[1];
+                var result = _context.Products.Where(p => p.Name.ToLower().Contains(searchWord)).Select(p => p.Name).ToList();
                 var result2 = _context.Products
            .Where(p => EF.Functions.Like(p.Name, "%" + searchWord + "%"))
            .Select(p => p.Name)
@@ -904,7 +1022,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             // search in the potentail mathces 
             var matchesTrial = potentialMatchesTrial.Where(p => CalculateLevenshteinDistance(nonExistingProductName.ToLower(), p.ToLower()) <= threshold).ToList();
 
-            if(potentialMatchesTrial.Count == 0)
+            if (potentialMatchesTrial.Count == 0)
             {
                 var matches = _context.Products
                                   .AsEnumerable()
@@ -912,14 +1030,14 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                                   .ToList();
                 return matches;
             }
-           
+
             return matchesTrial;
         }
-        
+        /* This method is being called from AJAX which will help seed the Product Model befor opening the popup */
         public async Task<IActionResult> CreateProduct(string product, InvoiceViewModel viewModel)
         {
-            
-               
+
+
             InvoiceItem Item = viewModel.ProductInvoice.Items.Where(p => p.Name.Equals(product)).FirstOrDefault();
             Product product1 = new Product();
             product1.Name = Item.Name;
@@ -928,23 +1046,25 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             product1.CreatedDate = DateTime.Now;
             product1.UpdatedDate = DateTime.Now;
 
-            TempData["Product"] =JsonConvert.SerializeObject(product1);
+            TempData["Product"] = JsonConvert.SerializeObject(product1);
             return RedirectToAction("Index");
-                
-            
+
+
         }
-        public  List<Company> SearchRelatedCompanies(string product)
+        /* This method will search for companies that may be an close to the company being extracted */
+        public List<Company> SearchRelatedCompanies(string product)
         {
-            if (product.Split(" ").Length > 1) {
+            if (product.Split(" ").Length > 1)
+            {
                 var words = product.Split(" ");
-                var result =  _context.Companies.Where(p => p.Company_Name.ToLower().Contains(words[0]+" "+ words[1])).ToList();
-                if(result.Count == 0)
+                var result = _context.Companies.Where(p => p.Company_Name.ToLower().Contains(words[0] + " " + words[1])).ToList();
+                if (result.Count == 0)
                 {
                     result = _context.Companies.ToList();
                 }
                 return result;
             }
-            else if(product.Split(" ").Length == 1)
+            else if (product.Split(" ").Length == 1)
             {
                 var result = _context.Companies.Where(p => p.Company_Name.ToLower().Contains(product)).ToList();
                 if (result.Count == 0)
@@ -955,7 +1075,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
             return null;
         }
-
+       
+        
         #endregion
     }
 }

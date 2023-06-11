@@ -19,7 +19,7 @@ namespace Smart_Invoice.Models
         [Required]
         [StringLength(50)]
         public string PhoneNumber { get; set; }
-      
+
 
     }
 }

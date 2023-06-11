@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230608102228_added registed company to inventory v2")]
+    partial class addedregistedcompanytoinventoryv2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -263,7 +265,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.ContactPerson", b =>
@@ -296,7 +298,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("ContactPersonId");
 
-                    b.ToTable("Contacts", (string)null);
+                    b.ToTable("Contacts");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Customer", b =>
@@ -350,7 +352,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("CustomerId");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Invoice", b =>
@@ -408,7 +410,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("RegisteredCompanyCompanyCode");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.InvoiceItem", b =>
@@ -448,7 +450,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("productId");
 
-                    b.ToTable("InvoiceItem", (string)null);
+                    b.ToTable("InvoiceItem");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Products.Category", b =>
@@ -465,7 +467,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Products.Product", b =>
@@ -513,7 +515,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Registered_Companies.RegisteredCompany", b =>
@@ -541,7 +543,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("CompanyCode");
 
-                    b.ToTable("RegisteredCompanies", (string)null);
+                    b.ToTable("RegisteredCompanies");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Stock.Inventory", b =>
@@ -551,9 +553,6 @@ namespace Smart_Invoice.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryId"), 1L, 1);
-
-                    b.Property<long?>("CompanyCode")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("LastUpdated")
                         .HasColumnType("datetime2");
@@ -569,6 +568,9 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.Property<DateTime?>("PurchaseDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<long?>("RCompanyCode")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("RegisteredCompanyCompanyCode")
                         .HasColumnType("bigint");
@@ -590,7 +592,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("Inventories", (string)null);
+                    b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
@@ -636,7 +638,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("RegisteredCompanyCompanyCode");
 
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Warehouses");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Warehouse.WarehouseProduct", b =>
@@ -659,14 +661,14 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("WarehouseProducts", (string)null);
+                    b.ToTable("WarehouseProducts");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
                 {
                     b.HasBaseType("Smart_Invoice.Models.Invoices.Invoice");
 
-                    b.ToTable("ProductInvoice", (string)null);
+                    b.ToTable("ProductInvoice");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.UtilityInvoice", b =>
@@ -691,7 +693,7 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Service_Number")
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("UtilityInvoices", (string)null);
+                    b.ToTable("UtilityInvoices");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

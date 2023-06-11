@@ -1,4 +1,5 @@
 ﻿using Smart_Invoice.Models.Products;
+using Smart_Invoice.Models.Registered_Companies;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -22,7 +23,9 @@ namespace Smart_Invoice.Models.Warehouse
 
         public virtual ICollection<WarehouseProduct>? WarehouseProducts { get; set; }
 
-
+        [ForeignKey("CompanyCode")]
+        public long? RCompanyCode { get; set; }
+        public virtual RegisteredCompany? RegisteredCompany { get; set; }
 
     }
 }

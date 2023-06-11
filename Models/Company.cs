@@ -26,6 +26,6 @@ namespace Smart_Invoice.Models
         public string? Phone { get; set; }
         public string? Email { get; set; }
         [ForeignKey("ContactPersonId")]
-        public ContactPerson? person { get; set;}
+        public ContactPerson? person { get; set; }
     }
 }
