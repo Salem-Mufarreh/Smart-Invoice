@@ -1,0 +1,49 @@
+﻿@model Smart_Invoice.Models.Warehouse.Warehouse
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Warehouse</h4>
+    <hr />
+       <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-6 w-100 h-100">
+            <div class="card-header">
+              Warehouse information
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-4">Warehouse Name</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.WarehouseName)</dd>
+                <dt class="col-sm-4">Warehouse Code</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.WarehouseCode)</dd>
+                <dt class="col-sm-4">Address</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Address)</dd>
+                <dt class="col-sm-4">Warehouse Maximum Capacity</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Capacity)</dd>
+                <dt class="col-sm-4">Available Space</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.AvailableSpace)</dd>
+                <dt class="col-sm-4">Occupancy Rate</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.OccupancyRate)</dd>
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+                
+
+              </dl>
+         
+            </div>
+          </div>
+        </div>
+    </div>
+
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.WarehouseId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

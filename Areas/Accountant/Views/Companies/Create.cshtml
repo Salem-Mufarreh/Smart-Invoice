@@ -1,0 +1,89 @@
+﻿@model Smart_Invoice.Models.Company
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create</h1>
+
+<h4>Company</h4>
+<hr />
+<div class="row">
+    <div>
+        <form asp-action="Create" method="post" asp-controller="Companies" id="formCreate" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row">
+        <div class="col-md-6">
+            <h2>Company Information</h2>
+            <div class="form-group">
+                <label asp-for="Company_Name" class="control-label">Company Name Arabic*</label>
+                <input asp-for="Company_Name" class="form-control" required/>
+                <span asp-validation-for="Company_Name" class="text-danger"></span>
+            </div>
+        <div class="form-group">
+            <label asp-for="Company_Name_English" class="control-label">Company Name English*</label>
+            <input asp-for="Company_Name_English" class="form-control" required/>
+            <span asp-validation-for="Company_Name_English" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Address" class="control-label">Company Address*</label>
+            <input asp-for="Address" class="form-control" required/>
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Company_License_Registration_Number" class="control-label">Company Licence Number*</label>
+            <input asp-for="Company_License_Registration_Number" class="form-control" required/>
+            <span asp-validation-for="Company_License_Registration_Number" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Phone" class="control-label">Phone*</label>
+            <input asp-for="Phone" class="form-control" required/>
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email" class="control-label">Company Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h2>Verified Contact Person</h2>
+        <div class="form-group">
+                <label asp-for="person" class="control-label"></label>
+                <select asp-for="person.ContactPersonId" class ="form-control" asp-items="ViewBag.WarehouseId"></select>
+            </div>
+    </div>
+</div>
+<div class="form-group">
+    <br />
+    <input type="submit" value="Create" class="btn btn-primary" />
+</div>
+
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+<script>
+
+  var form = document.getElementById('formCreate')
+  form.addEventListener('submit', function(event){
+      if(!form.checkValidity()){
+          event.preventDefault()
+          event.stopPropagation()
+          form.classList.add("was-validated")
+
+      }
+      else{
+          form.submit();
+      }
+  })
+   
+
+
+</script>
+

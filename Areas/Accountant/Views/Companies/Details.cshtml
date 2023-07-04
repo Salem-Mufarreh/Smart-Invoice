@@ -1,0 +1,69 @@
+﻿@model Smart_Invoice.Models.Company
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <div class="container">
+  <h4 class="my-4">Company</h4>
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-6 w-100 h-100">
+        <div class="card-header">
+          Company Information
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Company Name</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Company_Name)</dd>
+            <dt class="col-sm-4">Company Name (English)</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Company_Name_English)</dd>
+            <dt class="col-sm-4">Address</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Address)</dd>
+            <dt class="col-sm-4">License/Registration Number</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Company_License_Registration_Number)</dd>
+
+          </dl>
+          <hr />
+          <h5>Contact Information</h5>
+          <dl class="row">
+            <dt class="col-sm-4">Phone</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Phone)</dd>
+            <dt class="col-sm-4">Email</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="card mb-6 w-100 h-100">
+        <div class="card-header">
+          Contact Personal
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Name</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.person.Name)</dd>
+            <dt class="col-sm-4">Email</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.person.Email)</dd>
+            <dt class="col-sm-4">Phone</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.person.PhoneNumber)</dd>
+            <dt class="col-sm-4">Position</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.person.Position)</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.CompanyId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

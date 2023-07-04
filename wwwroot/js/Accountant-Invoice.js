@@ -102,6 +102,9 @@ ekUpload();
 /** Data tables*/
 $(document).ready(function () {
     $("#myTable").DataTable();
+    $("#btn_submit").click(function (event) {
+        StartLoading();
+    });
 })
 
 function validateFile(file) {
@@ -129,4 +132,27 @@ function validateFile(file) {
     }
 
     return true;
+}
+
+function StartLoading() {
+    var parentSpan = document.getElementById("file-upload-btn");
+    var newSpan = document.createElement("span");
+    var loading = document.createElement("span");
+    parentSpan.textContent = "";
+    newSpan.classList.add("spinner-grow");
+    newSpan.classList.add("spinner-grow-sm");
+    newSpan.ariaHidden = true;
+    newSpan.role = "status";
+    loading.textContent = " Processing ...";
+    parentSpan.appendChild(newSpan);
+    parentSpan.appendChild(loading);
+
+    var overlay = document.getElementById("spinner-overlay");
+    overlay.hidden = false;
+    var spinner = document.getElementById("spinner");
+    spinner.style.display = 'block';
+    overlay.style.display = 'flex';
+    document.body.style.pointerEvents = 'none'; 
+
+
 }

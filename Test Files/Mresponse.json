@@ -1,7 +1,9 @@
 {
-  "Company_Name": "JERUSALEM DISTRICT ELECTRICITY CO. LTD.",
-  "Address": "15 Salah - El-Din Street - Jerusalem - P.O.Box 19118 - Tel 6269333 - Fak. 5282441",
-  "Company_License_Registration_Number": "2222",
+  "Company": {
+    "Company_Name": "JERUSALEM DISTRICT ELECTRICITY CO. LTD.",
+    "Address": "15 Salah - El-Din Street - Jerusalem - P.O.Box 19118 - Tel 6269333 - Fak. 5282441",
+    "Company_License_Registration_Number": "562600700"
+  },
   "Invoice_Number": "POS 102 9102770",
   "Invoice_Date": "17:57:27 19/04/2023",
   "Invoice_Client_Name": "رامي يعقوب مسعد",

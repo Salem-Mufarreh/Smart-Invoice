@@ -1,46 +1,31 @@
 {
   "Company": {
     "Company_Name": "شركة إيكا للتجارة العامة",
-    "Address": "شارع الصف-بيت لحم، ص.ب 283، فلسطين",
+    "Company_Name_English": "EKA General Trade",
+    "Address": "شارع الصف-بيت لحم ، ص.ب 283 فلسطين",
     "Phone": "2747108 9702",
-    "company_fax": "2764432 9702",
-    "company_license": "مشتغل مرخص",
+    "Fax": "2764432 9702",
     "Company_License_Registration_Number": "562442889"
   },
-  "store_name": "سوبر ماركت مازن - رام اللة التحتا",
-  "store_address": "رام اللة التحتا، المنطقة 7 رام الله",
-  "store_phone": "9337003-059(970)",
-  "store_tax_number": "919448330*",
-  "customer_number": "0004109",
-  "reference_number": "***",
-  "sales_representative": {
-    "id": "001",
-    "name": "عماد الدين يعقوب داود فواضله"
-  },
-  "warehouse": {
-    "id": "0001",
-    "name": "المستودع الرئيسي- بيت لحم"
-  },
-  "note": "البضاعة المباعة لا ترد ولا تستبدل بعد استلامها",
-  "invoice_number": "23/00009135",
-  "invoice_date": "27/04/2023, 09:26:17",
-  "items": [
+  "Invoice_Number": "23/00009135",
+  "Invoice_Date": "28/04/2023",
+  "Subtotal": 572.00,
+  "Tax": 78.90,
+  "Total": 572.00,
+  "Items": [
     {
-      "unit": "BOX024",
+      "Name": "Carlsberg 330ml بيرة كارلسبرغ زجاج",
+      "Unit": "BOX024",
       "Quantity": 2,
-      "name": "بيرة كارلسبرغ علب Carlsberg 500ml",
-      "UnitPrice": 124.00,
+      "UnitPrice": 124,
       "Total": 248.00
     },
     {
-      "unit": "BOX024",
+      "Name": "Carlsberg 500ml بيرة كارلسبرغ علب",
+      "Unit": "BOX024",
       "Quantity": 3,
-      "name": "بيرة كارلسبرغ زجاج Carlsberg 330ml",
-      "UnitPrice": 108.00,
+      "UnitPrice": 108,
       "Total": 324.00
     }
-  ],
-  "subtotal": 572.00,
-  "tax": 78.90,
-  "total": 650.90
+  ]
 }

@@ -1,0 +1,74 @@
+﻿@model IEnumerable<Smart_Invoice.Models.Company>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "List of Companies";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+
+<h1>List of Companies</h1>
+
+<p>
+    <a class="btn btn-info text-white" asp-action="Create">Create New Company
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
+            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13zm.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0z"/>
+        </svg>
+    </a>
+</p>
+<table class="display" id="companyTable">
+    <thead>
+        <tr>
+            <th>
+                Company Name
+            </th>
+            <th>
+                Company Name in English
+            </th>
+            <th>
+               Address
+            </th>
+            <th>
+                License Registration Number
+            </th>
+            <th>
+                Phone
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Company_Name)
+            </td>
+            
+            <td>
+                @Html.DisplayFor(modelItem => item.Company_Name_English)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Company_License_Registration_Number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Phone)
+            </td>
+           
+            <td>
+                @*TODO: Make the edit buttons work !!*@
+
+                <a asp-action="Edit" asp-controller="Companies" asp-route-id="@item.CompanyId">Edit</a> |
+                <a asp-controller="Companies" asp-action="Details" asp-route-id="@item.CompanyId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.CompanyId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<script src="/js/Company.js"></script>

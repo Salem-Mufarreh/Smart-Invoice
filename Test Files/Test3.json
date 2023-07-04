@@ -1,0 +1,25 @@
+{
+  "Company": {
+    "Company_Name": "شركة أبو لبن للتجارة العامة",
+    "Company_Name_English": "Abu Laban General Trading Company",
+    "Address": "رام الله - فلسطين",
+    "Phone": "0599658810",
+    "Fax": "Fax Number",
+    "Company_License_Registration_Number": "562413823"
+  },
+  "invoice_number": "2023/05699/INV",
+  "Invoice_Date": "25/04/2023",
+  "Subtotal": 120.00,
+  "Tax": 0.08,
+  "Total": 120.08,
+  "Currency": "ILS",
+  "Items": [
+    {
+      "Name": "نستلة 0.5 لتر",
+      "Quantity": 10,
+      "Unit": "علبة",
+      "UnitPrice": 12.00,
+      "Total": 120.00
+    }
+  ]
+}

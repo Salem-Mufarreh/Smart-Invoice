@@ -1,0 +1,55 @@
+﻿@model Smart_Invoice.Models.Products.Product
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Product</h4>
+    <hr />
+   
+    <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-6 w-100 h-100">
+            <div class="card-header">
+              Product information
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-4">Product Name</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Name)</dd>
+                <dt class="col-sm-4">Product Description</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Description)</dd>
+                <dt class="col-sm-4">SKU</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.SKU)</dd>
+                <dt class="col-sm-4">Product price</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Price)</dd>
+                <dt class="col-sm-4">Cost Price</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.CostPrice)</dd>
+                <dt class="col-sm-4">Category Id</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.CategoryId)</dd>
+                <dt class="col-sm-4">Created At</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.CreatedDate)</dd>
+                <dt class="col-sm-4">Updated At</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.UpdatedDate)</dd>
+                <dt class="col-sm-4">Is Available </dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.IsAvailable)</dd>
+                <dt class="col-sm-4">Is Active </dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.IsActive)</dd>
+
+              </dl>
+         
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.ProductId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

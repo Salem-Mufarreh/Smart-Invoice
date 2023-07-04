@@ -1,20 +1,41 @@
-﻿@using Smart_Invoice.Models.Invoices;
+﻿@using Newtonsoft.Json;
+@using Smart_Invoice.Models.Invoices;
+@using Smart_Invoice.Utility;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
 @model IEnumerable<Invoice>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Invoices";
     Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    if(TempData["Toastr"] != null)
+    {
+        
+        Toastr Error = JsonConvert.DeserializeObject<Toastr>(TempData["Toastr"].ToString());
+       
+        <script>
+            toastr["@Error.ToastType"]("@Error.ToastMessage");
+        </script>
+        
+        TempData["Toastr"] = null ;
+    }
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
 
-<h1>Index</h1>
+<h1>Invoices</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-info text-white">Create New
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
+            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13zm.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0z"/>
+        </svg>
+    </a>
 </p>
 <table class="table" id="Invoices">
-    <thead>
+    <thead class="card-header">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Company.Company_Name)
@@ -60,6 +81,7 @@
 }
     </tbody>
 </table>
+
 <script>
     
 $(document).ready(function () {

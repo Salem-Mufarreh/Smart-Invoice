@@ -17,7 +17,7 @@ namespace Smart_Invoice.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.15")
+                .HasAnnotation("ProductVersion", "6.0.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -249,11 +249,10 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Company_Name_Normilized")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ContactPersonId")
+                    b.Property<int?>("ContactPersonId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -264,7 +263,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.ContactPerson", b =>
@@ -297,7 +296,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("ContactPersonId");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contacts", (string)null);
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Customer", b =>
@@ -351,7 +350,7 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasKey("CustomerId");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Invoice", b =>
@@ -362,15 +361,14 @@ namespace Smart_Invoice.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<long?>("CompanyCode")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
                     b.Property<int?>("CompanyId1")
                         .HasColumnType("int");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Invoice_Date")
                         .IsRequired()
@@ -386,6 +384,9 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Invoice_Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("RegisteredCompanyCompanyCode")
+                        .HasColumnType("bigint");
 
                     b.Property<double?>("Subtotal")
                         .IsRequired()
@@ -405,9 +406,267 @@ namespace Smart_Invoice.Data.Migrations
 
                     b.HasIndex("CompanyId1");
 
-                    b.ToTable("Invoices");
+                    b.HasIndex("RegisteredCompanyCompanyCode");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Invoice");
+                    b.ToTable("Invoices", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.InvoiceItem", b =>
+                {
+                    b.Property<int?>("InvoiceItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("InvoiceItemId"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Quantity")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.Property<double>("Total")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Unit")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("UnitPrice")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("productId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InvoiceItemId");
+
+                    b.HasIndex("ProductInvoiceId");
+
+                    b.HasIndex("productId");
+
+                    b.ToTable("InvoiceItem", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Products.Category", b =>
+                {
+                    b.Property<long>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CategoryId"), 1L, 1);
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CategoryId");
+
+                    b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Products.Product", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"), 1L, 1);
+
+                    b.Property<long?>("CategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double?>("CostPrice")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<string>("SKU")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ProductId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Registered_Companies.RegisteredCompany", b =>
+                {
+                    b.Property<long>("CompanyCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CompanyCode"), 1L, 1);
+
+                    b.Property<string>("CompanyAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("GovCompanyRegistration")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CompanyCode");
+
+                    b.ToTable("RegisteredCompanies", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Stock.Inventory", b =>
+                {
+                    b.Property<int>("InventoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryId"), 1L, 1);
+
+                    b.Property<long?>("CompanyCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PurchaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("RegisteredCompanyCompanyCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("SellingPrice")
+                        .IsRequired()
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InventoryId");
+
+                    b.HasIndex("RegisteredCompanyCompanyCode");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("Inventories", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
+                {
+                    b.Property<int>("WarehouseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WarehouseId"), 1L, 1);
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AvailableSpace")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Capacity")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.Property<double?>("OccupancyRate")
+                        .HasColumnType("float");
+
+                    b.Property<long?>("RCompanyCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("RegisteredCompanyCompanyCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WarehouseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("WarehouseId");
+
+                    b.HasIndex("RegisteredCompanyCompanyCode");
+
+                    b.ToTable("Warehouses", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.WarehouseProduct", b =>
+                {
+                    b.Property<int>("WarehouseProductId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WarehouseProductId"), 1L, 1);
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("WarehouseProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("WarehouseProducts", (string)null);
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
+                {
+                    b.HasBaseType("Smart_Invoice.Models.Invoices.Invoice");
+
+                    b.ToTable("ProductInvoice", (string)null);
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.UtilityInvoice", b =>
@@ -432,7 +691,7 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("Service_Number")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("UtilityInvoice");
+                    b.ToTable("UtilityInvoices", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -490,9 +749,7 @@ namespace Smart_Invoice.Data.Migrations
                 {
                     b.HasOne("Smart_Invoice.Models.ContactPerson", "person")
                         .WithMany()
-                        .HasForeignKey("ContactPersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ContactPersonId");
 
                     b.Navigation("person");
                 });
@@ -509,9 +766,114 @@ namespace Smart_Invoice.Data.Migrations
                         .WithMany()
                         .HasForeignKey("CompanyId1");
 
+                    b.HasOne("Smart_Invoice.Models.Registered_Companies.RegisteredCompany", "RegisteredCompany")
+                        .WithMany()
+                        .HasForeignKey("RegisteredCompanyCompanyCode");
+
                     b.Navigation("Company");
 
                     b.Navigation("CompanyID");
+
+                    b.Navigation("RegisteredCompany");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.InvoiceItem", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Invoices.Product_Invoice", "ProductInvoice")
+                        .WithMany("Items")
+                        .HasForeignKey("ProductInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("productId");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductInvoice");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Products.Product", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Products.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Stock.Inventory", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Registered_Companies.RegisteredCompany", "RegisteredCompany")
+                        .WithMany()
+                        .HasForeignKey("RegisteredCompanyCompanyCode");
+
+                    b.HasOne("Smart_Invoice.Models.Warehouse.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId");
+
+                    b.Navigation("RegisteredCompany");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Registered_Companies.RegisteredCompany", "RegisteredCompany")
+                        .WithMany()
+                        .HasForeignKey("RegisteredCompanyCompanyCode");
+
+                    b.Navigation("RegisteredCompany");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.WarehouseProduct", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Invoice.Models.Warehouse.Warehouse", "Warehouse")
+                        .WithMany("WarehouseProducts")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Invoices.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.UtilityInvoice", b =>
+                {
+                    b.HasOne("Smart_Invoice.Models.Invoices.Invoice", null)
+                        .WithOne()
+                        .HasForeignKey("Smart_Invoice.Models.Invoices.UtilityInvoice", "Id")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Warehouse.Warehouse", b =>
+                {
+                    b.Navigation("WarehouseProducts");
+                });
+
+            modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

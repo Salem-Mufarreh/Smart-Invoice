@@ -1,0 +1,29 @@
+﻿/* Adjust the font style */
+table.dataTable {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+/* Set the header background color */
+table.dataTable thead th {
+    background-color: #F2F2F2;
+}
+
+/* Add border and padding to cells */
+table.dataTable td,
+table.dataTable th {
+    border: 1px solid #CCCCCC;
+    padding: 5px;
+}
+
+/* Add hover effect on rows */
+table.dataTable tbody tr:hover {
+    background-color: #F9F9F9;
+}
+.typeahead{
+    position:inherit;
+}
+
+.dataTables_info {
+    display:none;
+}
