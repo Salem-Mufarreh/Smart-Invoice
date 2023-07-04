@@ -11,51 +11,37 @@
 <div>
     <h4>Warehouse</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.WarehouseName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.WarehouseName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.WarehouseCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.WarehouseCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Capacity)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Capacity)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AvailableSpace)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AvailableSpace)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.OccupancyRate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OccupancyRate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        
-    </dl>
+       <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-6 w-100 h-100">
+            <div class="card-header">
+              Warehouse information
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-4">Warehouse Name</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.WarehouseName)</dd>
+                <dt class="col-sm-4">Warehouse Code</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.WarehouseCode)</dd>
+                <dt class="col-sm-4">Address</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Address)</dd>
+                <dt class="col-sm-4">Warehouse Maximum Capacity</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Capacity)</dd>
+                <dt class="col-sm-4">Available Space</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.AvailableSpace)</dd>
+                <dt class="col-sm-4">Occupancy Rate</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.OccupancyRate)</dd>
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+                
+
+              </dl>
+         
+            </div>
+          </div>
+        </div>
+    </div>
+
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.WarehouseId">Edit</a> |

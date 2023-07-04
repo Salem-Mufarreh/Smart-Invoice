@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
+using NuGet.Packaging.Signing;
 using Smart_Invoice.Areas.Identity.Pages.Account;
 using Smart_Invoice.Data;
 using Smart_Invoice.Models;
@@ -282,7 +283,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return View(new InvoiceViewModel());
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -639,71 +640,87 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 
             });
             AnnotateImageResponse response = client.Annotate(request);
-
-
-            var structuredText = RestructureTextWithVertices(response.FullTextAnnotation.Pages[0].Blocks.ToList());            
-            return structuredText;
+            
+           
+            var structuredText = RestructureTextWithVertices(response.FullTextAnnotation.Pages[0].Blocks.ToList());
+            return response.FullTextAnnotation.Text;
+           
         }
 
         /* This Method will take all the block in the response and reformat the text accourding to the x-y coordenates which will help the 
             GPT model to construct the product table and know excatly the product names and their prices so no conflict will appear */
         public static string RestructureTextWithVertices(List<Google.Cloud.Vision.V1.Block> extractedText)
         {
-            // Sort extracted text elements based on x-coordinate
-            var sortedText = extractedText.OrderBy(elem => elem.BoundingBox.Vertices[0].X).ToList();
-            // Group elements with overlapping y-coordinate
-            var lines = new List<List<Google.Cloud.Vision.V1.Block>>();
-            var currentLine = new List<Google.Cloud.Vision.V1.Block> { sortedText[0] };
-            for (int i = 1; i < sortedText.Count; i++)
+            
+            List<string> document = new List<string>();
+            List<Word> allwords = new List<Word>();
+            // Sort the extracted text elements based on both X and Y coordinates
+            var sortedText = extractedText.OrderBy(elem=> elem.BoundingBox.Vertices[3].X).ToList();
+            List<string> test1 = new List<string>();
+            List<int> yCoordinates = new List<int>();
+            foreach (var block in sortedText)
             {
-                var currentBox = sortedText[i].BoundingBox;
-                var previousBox = sortedText[i - 1].BoundingBox;
-                if (currentBox.Vertices[0].Y == previousBox.Vertices[1].Y)
+                List<string> paragraphs = new List<string>();
+
+                foreach (var paragraph in block.Paragraphs)
                 {
-                    currentLine.Add(sortedText[i]);
+
+                    allwords.AddRange(paragraph.Words);
+                    foreach (var item in paragraph.Words)
+                    {
+                        yCoordinates.Add(item.BoundingBox.Vertices[0].X);
+                        test1.Add(string.Join("", item.Symbols.Select(e => e.Text)) );
+                    }
+
+                }
+
+            }
+            var spacing = GetAverageSpacing(yCoordinates).Result;
+
+            Word previousWord = allwords[0];
+            List<Word> currentLine = new List<Word>();
+            List<string> lines = new List<string>();
+            currentLine.Add(previousWord);
+            for (int i = 1; i < allwords.Count; i++)
+            {
+                Word currentWord = allwords[i];
+                double currentAvg = 0.0;
+                double previousAvg = 0.0;
+                for (int j = 0; j < 4; j++)
+                {
+                    currentAvg += currentWord.BoundingBox.Vertices[j].X;
+                    previousAvg += previousWord.BoundingBox.Vertices[j].X;
+                }
+                currentAvg = currentAvg / 4;
+                previousAvg = previousAvg / 4;
+                if (Math.Abs(currentAvg - previousAvg) <= 15)
+                {
+                    currentLine.Add(currentWord);
                 }
                 else
                 {
-                    lines.Add(currentLine);
-                    currentLine = new List<Google.Cloud.Vision.V1.Block> { sortedText[i] };
+                    lines.Add(ConcatenateWordsInLine(currentLine));
+                    previousWord = currentWord;
+                    currentLine = new List<Word> { currentWord };
                 }
             }
-            lines.Add(currentLine);
+            lines.Add(ConcatenateWordsInLine(currentLine));
+            string reconstructedText = string.Join("\n", lines);
+           
 
-            // Sort elements within each line based on x-coordinate
-            foreach (var line in lines)
-            {
-                line.Sort((elem1, elem2) => elem1.BoundingBox.Vertices[0].X.CompareTo(elem2.BoundingBox.Vertices[0].X));
-            }
-            List<string> document = new List<string>();
-            foreach(var line in lines)
-            {
-                List<string> blocks = new List<string>();
-                foreach(var block in line)
-                {
-                    List<string> paragraphs = new List<string>();
-                    foreach (var paragraph in block.Paragraphs)
-                    {
-                        List<string> words = new List<string>();
-                        foreach (var word in paragraph.Words)
-                        {
-                            words.Add(string.Join("", word.Symbols.Select(e=> e.Text)));
-                        }
-                        //line
-                        paragraphs.Add(string.Join(" ",words));
-                    }
-                    //n
-                   blocks.Add(string.Join("\n",paragraphs));
-                }
-                document.Add("\n");
-                document.Add(string.Join(" \n ", blocks));
-                document.Add("\t");
-            }
-            // Concatenate text elements within each line
 
-            return string.Join("", document);
+            return reconstructedText;
+
         }
-
+        public static string ConcatenateWordsInLine(List<Word> Words)
+        {
+            List<string> line = new List<string>();
+            foreach (var word in Words)
+            {
+                line.Add(string.Join("", word.Symbols.Select(elm => elm.Text)));
+            }
+            return string.Join(" ", line);
+        }
 
 
         public Task<string> CheckInvoicePrices(InvoiceViewModel viewModel)
@@ -776,7 +793,53 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             ViewBag.inValid = inValid;
             return null;
         }
-       
+
+        private static async Task<double> GetAverageSpacing(List<int> yCoordinates)
+        {
+            // Convert the string to an array of integers
+            yCoordinates.Sort();
+            List<double> lineSpacings = new List<double>(); // List to store average spacings for each line
+
+            List<int> currentLine = new List<int>();
+            int previousY = yCoordinates[0];
+
+            // Iterate over the Y coordinates and calculate the average spacing for each line
+            foreach (int y in yCoordinates)
+            {
+                if (Math.Abs(y - previousY) > 10)
+                {
+                    double averageSpacing = CalculateAverageSpacing(currentLine);
+                    lineSpacings.Add(averageSpacing);
+                    currentLine.Clear();
+                }
+
+                currentLine.Add(y);
+                previousY = y;
+            }
+
+            // Calculate and store the average spacing for the last line
+            double lastLineAverageSpacing = CalculateAverageSpacing(currentLine);
+            lineSpacings.Add(lastLineAverageSpacing);
+            double averageSpacing2 = 0.0;
+            foreach (double line in lineSpacings)
+            {
+                averageSpacing2 += line;
+            }
+            averageSpacing2 = averageSpacing2 / lineSpacings.Count;
+
+            return averageSpacing2;
+        }
+        static double CalculateAverageSpacing(List<int> line)
+        {
+            double totalSpacing = 0;
+            for (int i = 1; i < line.Count; i++)
+            {
+                int spacing = Math.Abs(line[i] - line[i - 1]);
+                totalSpacing += spacing;
+            }
+
+            return totalSpacing / (line.Count - 1);
+        }
 
         public async Task<Boolean> CheckCompany(string companyName)
         {
@@ -1075,8 +1138,24 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             }
             return null;
         }
-       
-        
+
+        [HttpGet]
+        public IActionResult GetBillItems()
+        {
+            string invoice = HttpContext.Session.GetString("ProductInvoice");
+            if (invoice != null)
+            {
+                InvoiceViewModel viewModel = JsonConvert.DeserializeObject<InvoiceViewModel>(invoice);
+                if (viewModel != null && viewModel.ProductInvoice != null && viewModel.ProductInvoice.Items != null)
+                {
+                    List<InvoiceItem> items = (List<InvoiceItem>)viewModel.ProductInvoice.Items;
+                    return Json(new { data = items.ToArray() });
+                }
+            }
+            return Json(new { data = new List<InvoiceItem>() }); // Return an empty list if there are no items
+
+        }
+
         #endregion
     }
 }

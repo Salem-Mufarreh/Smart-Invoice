@@ -56,12 +56,17 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             ViewData["WarehouseId"] = new SelectList(_context.Contacts, "ContactPersonId", "Name");
             Company company = new Company();
             // TODO
-            InvoiceViewModel invoiceViewModel = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
-            Product_Invoice product = invoiceViewModel.ProductInvoice;
-            if(product != null)
+            if(TempData["viewModel"] != null)
             {
-                company = product.Company;
+                InvoiceViewModel invoiceViewModel = JsonConvert.DeserializeObject<InvoiceViewModel>(TempData["viewModel"].ToString());
+                Product_Invoice product = invoiceViewModel.ProductInvoice;
+                if (product != null)
+                {
+                    company = product.Company;
+                    
+                }
             }
+            
             return View(company);
         }
 

@@ -1,4 +1,5 @@
 ﻿@model Smart_Invoice.Models.Stock.Inventory
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Edit";
@@ -16,7 +17,7 @@
             <input type="hidden" asp-for="InventoryId" />
             <div class="form-group">
                 <label asp-for="ProductId" class="control-label"></label>
-                <input asp-for="ProductId" class="form-control" />
+                <input asp-for="ProductId" class="form-control" readonly/>
                 <span asp-validation-for="ProductId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -60,6 +61,7 @@
         </form>
     </div>
 </div>
+
 
 <div>
     <a asp-action="Index">Back to List</a>

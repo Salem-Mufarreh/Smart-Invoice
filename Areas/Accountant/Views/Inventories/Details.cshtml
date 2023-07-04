@@ -1,4 +1,5 @@
 ﻿@model Smart_Invoice.Models.Stock.Inventory
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Details";
@@ -10,56 +11,37 @@
 <div>
     <h4>Inventory</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ProductId)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ProductId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SKU)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SKU)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ProductCount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ProductCount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PurchaseDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PurchaseDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LastUpdated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LastUpdated)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SellingPrice)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SellingPrice)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Notes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Notes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Warehouse)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Warehouse.Address)
-        </dd>
-    </dl>
+   <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-6 w-100 h-100">
+        <div class="card-header">
+          Product-Inventory information
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Product Id</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.ProductId)</dd>
+            <dt class="col-sm-4">SKU</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.SKU)</dd>
+            <dt class="col-sm-4">Product Count</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.ProductCount)</dd>
+            <dt class="col-sm-4">Purchase Date</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.PurchaseDate)</dd>
+            <dt class="col-sm-4">Last Updated</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.LastUpdated)</dd>
+            <dt class="col-sm-4">Selling Price</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.SellingPrice)</dd>
+            <dt class="col-sm-4">Warehouse</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Warehouse.WarehouseName)</dd>
+            <dt class="col-sm-4">Notes</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Notes)</dd>
+
+          </dl>
+         
+        </div>
+      </div>
+    </div>
+</div>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.InventoryId">Edit</a> |

@@ -7,106 +7,172 @@
 @using Smart_Invoice.Utility
 @model ExchangeRateAPi
 <script src="/js/apexcharts.min.js"></script>
+<style>
+    body{
+          background-color:#f3f4f5;
 
+    }
+      
+</style>
 <link rel="stylesheet" href="/css/apexcharts.css"/>
 <link rel="stylesheet" href="/css/site.css" />
+<div>
+    <h2>Good afternoon,<br />
+        Jhon Doe
+    </h2>
+</div>
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="row">
+                        <div class="col-md-8">
+                        <div class="card-header">Sales</div>
+                        <div class="card-body">
+                            <div class="row"> 
+                                <div class="col-md-4">
+                                    <h6>Sales in July</h6>
+                                    <p>$3,552.50</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Open Invoices</h6>
+                                    <p>$965.00</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Overdue Invoices</h6>
+                                    <p>$470.00</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                 <h6 style="text-align:center"> No overdue bills - great work!</h6>
+                             </div>
+                        </div>
+                    </div>
+                        <div class="col-md-3">
+                             <div id="CashFlow"></div>
+                        </div>
+                    </div>
+                     
+                </div>
+                <br />
+                <div class="card">
+                    <div class="row">
+                        <div class="col-md-8">
+                        <div class="card-header">Purchases</div>
+                        <div class="card-body">
+                            <div class="row"> 
+                                <div class="col-md-4">
+                                    <h6>Purchases in July</h6>
+                                    <p>$506.00</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Open bills</h6>
+                                    <p>$591.00</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Overdue bills</h6>
+                                    <p>$0.00</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <h6 style="text-align:center"> No overdue bills - great work!</h6>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col-md-3">
+                             <div id="Products"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+                    <br />
+                <div class="card">
+                    <div class="row">
+                        <div class="col-md-12">
+                        <div class="card-header">How Your Business is tracking </div>
+                            <div class="card-body">
+                                <div id="YearTrack"></div>
+                            </div>
+                   
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row card">
+                    <div cite="col-md-12 ">
+                        <div class="card-header">Manage your day-to-day</div>
+                        <div class="card-body">
+                            <p>Bank account</p>
+                            <select class="form-select">
+                                <option value="1">1-11110 ANZ Bussiness Chaque</option>
+                            </select>
+                            <br />
+                            <div class="row">
+                                <div class="col">
+                                    <h6>Bank feed balance</h6>
+                                    <span>$30,812.00</span>
+                                </div>
+                                <div class="col">
+                                    <h6>Calculated balance</h6>
+                                    <span>$30,812.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row card">
+                    <div class="col-md-12 ">
+                        <div class="card-header">Pay runs</div>
+                        <div class="card-body">
+                            <div class="row card">
+                                <h6>Monday 6 - Sun 14 July</h6>
+                                <span class="is-valid"></span>
+                                <span>date of payment is Fri 18</span>
+                            </div>
+                            <div class="row card">
+                                <h6>Monday 6 - Sun 14 July</h6>
+                                <span class="is-valid"></span>
+                                <span>date of payment is Fri 18</span>
+                            </div>
+                            <div class="row card">
+                                <h6>Monday 6 - Sun 14 July</h6>
+                                <span class="is-valid"></span>
+                                <span>date of payment is Fri 18</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row card">
+                    <div class="col-md-12">
+                        <div class="card-header">Exchage Rates</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <h6>ILS</h6>
+                                </div>
+                                <div class="col">3.64</div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col">
+                                    <h6>@Model.BaseUSD</h6>
+                                </div>
+                                <div class="col">@Model.rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="row">
-        <div class="col"style="flex-grow:0" >
-            
-            <div class="card">
-                <div class="row ">
-                    <p>Income</p>
-                    <p>2800.00$</p>
-                    <p>per month in year 2022</p>
-                </div>
-                
-                <div id="income"></div>
-            </div>
-          
-        </div>
-         
-        <div class="col"style="flex-grow:0" >
-            
-            <div class="card">
-                <div class="row ">
-                    <p>Expenses</p>
-                    <p>800.00$</p>
-                    <p>per month in year 2022</p>
-                </div>
-                
-                <div id="Balance"></div>
-            </div>
-          
-        </div>
-        
-        <div class="col"style="flex-grow:0" >
-            
-            <div class="card">
-                <div class="row ">
-                    <p>Invoice Processed</p>
-                    <p>2800.00$</p>
-                    <p>per month in year 2022</p>
-                </div>
-                
-            </div>
-          
-        </div>
-        <div class="col"style="flex-grow:0" >
-            
-            <div class="card">
-                <div class="row ">
-                    <p>Average Payment Time</p>
-                    <p>2800.00$</p>
-                    <p>per month in year 2022</p>
-                </div>
-                
-            </div>
-          
-        </div>
-</div>
-<br />
-<div class="row">
-    <div class="col">
-        <div class="card" style="width:fit-content;height:fit-content">
-            <p>Cash Flow</p>
-            <div id="CashFlow"></div>
-        </div>
-    </div>
-   <div class="col">
-       <div class="card" style="flex-direction:column">
-           <p>Reminders</p>
-           <div class="event-item">
-               <p>Deposit $500 to joe Wallet</p>
-               <p>Time here</p>
-           </div>
-       </div>
-   </div>
-   <div class="col">
-       <div class="card" style="flex-direction:column">
-           <p>Currency exchange Rates</p>
-           <div class="event-item">
-         
-               <div class="row">
-                   <div class="col">
-                       <p>USD 1</p>
-                   </div>
-                   <div class="col"><p>ILS @Model.rate</p></div>
-               </div>
-               <p></p>
-               <p>@Model.date</p>
-           </div>
-       </div>
-   </div>
-</div>
-<br />
-<div class="row">
-     <div class="col">
-        <div class="card" style="width:fit-content;height:fit-content">
-            <p>Top Products</p>
-            <div id="Products"></div>
-        </div>
-    </div>
-</div>
+
+</section>
+
+
+
 <script src="/js/Admin-Dashboard.js"></script>
     

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.0/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js-bootstrap-css/1.2.1/typeaheadjs.css" integrity="sha512-KS19mt4IHNVYK0aHDSLFuTqdtp7bJdmOaVcQX+UACZYY7wQLPiQWNL3PTcGyo1PtzOY7IDSZTkzhkSikY7HdZg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="/js/toastr.js"></script>
@@ -76,6 +77,15 @@
                             <ul class="dropdown-menu dropdown-menu-dark">
                             <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Products">List Products</a></li>
                             <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Products">Add Products</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
+                            Inventories
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Inventories">Inventories</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Inventories">Add Inventory</a></li>
                             </ul>
                         </li>
                         

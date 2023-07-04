@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace Smart_Invoice.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = SD.Role_Admin)]
+    /*[Authorize(Roles = SD.Role_Admin)]*/
     public class HomeController : Controller
     {
         private readonly string _exchangeAuth;

@@ -9,9 +9,9 @@
 
 
 <link rel="stylesheet" href="/css/AddInvoice.css" />
-<h1>Create</h1>
+<h1>Create new bill</h1>
 
-<h4>Invoice</h4>
+
 <hr />
 
 
@@ -42,55 +42,56 @@
 </section>
 <br />
 <div>
-    <h2>Processed Invoices</h2>
+    <h2>Saved Invoices</h2>
     <hr />
     <table id="myTable" class="display">
-    <thead>
-        <tr>
-            <th>Invoice Number</th>
-            <th>Company</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Due Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
+        <thead>
+            <tr>
+                <th>Invoice Number</th>
+                <th>Company</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>INV-001</td>
+                <td>Company A</td>
+                <td>2023-06-01</td>
+                <td>$100.00</td>
+                <td>2023-07-01</td>
+                <td>Paid</td>
+            </tr>
+            <tr>
+                <td>INV-002</td>
+                <td>Company B</td>
+                <td>2023-06-15</td>
+                <td>$250.00</td>
+                <td>2023-07-15</td>
+                <td>Due</td>
+            </tr>
+            <tr>
+                <td>INV-003</td>
+                <td>Company C</td>
+                <td>2023-06-30</td>
+                <td>$150.00</td>
+                <td>2023-07-30</td>
+                <td>Due</td>
+            </tr>
+            <tr>
+                <td>INV-004</td>
+                <td>Company D</td>
+                <td>2023-07-05</td>
+                <td>$300.00</td>
+                <td>2023-08-05</td>
+                <td>Due</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
-        </tr>
-        <tr>
-            <td>Row 2 Data 1</td>
-            <td>Row 2 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-        </tr>
-         <tr>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-        </tr>
-        <tr>
-            <td>Row 2 Data 1</td>
-            <td>Row 2 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-            <td>Row 1 Data 1</td>
-            <td>Row 1 Data 2</td>
-        </tr>
-    </tbody>
-</table>
 </div>
 <div id="spinner-overlay" hidden>
   <div id="spinner" class="spinner-border text-primary" role="status">
@@ -102,5 +103,6 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
 
 <script src="/js/Accountant-Invoice.js"></script>

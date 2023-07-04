@@ -13,11 +13,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
+<link rel="stylesheet" href="/css/Edit_Invoice.css" />
+<h1>Create bill</h1>
 
-<h4>Invoice</h4>
+
 <hr />
-
+<div class="alert fade show" role="alert" style="border:2px solid #0dcaf0;">
+  We had a go at filling in some of your data. Check that the <span style="background-color: powderblue;padding:5px;">pre-filled details in blue</span> are correct.
+  
+</div>
 <div class="row">
   <!-- Column 1 content -->
   <div class="column" style="width:40%">
@@ -37,129 +41,167 @@
         @Html.AntiForgeryToken()
             @if (Model.ProductInvoice != null)
             {
-                <div class="row">
-                    <div class="form-floating col-md-6" style="margin-bottom:0.5em">
-                        <select class="form-select" id="Company_Name" name="Company.Company_Name"
-                        aria-required="true" asp-items="ViewBag.Companies" required></select>
-
-                        <label>Company Name</label>
-
+                <div class="form-group row">
+                    <label for="Company_Name" class="col-sm-2 col-form-label">Supplier: </label>
+                    <div class="col-sm-8">
+                        <select class="form-select" id="Company_Name" name="Company.Company_Name" 
+                    aria-required="true" asp-items="ViewBag.Companies" required></select>
                     </div>
                     <button class="btn btn-primary add-company-btn col-md-2" id="@Model.ProductInvoice.Company.Company_Name">Create Company</button>
                 </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Invoice_Number" 
+                    
+                 
+                <div class="form-group row">
+                    <label for="Invoice_Number" class="col-sm-2 col-form-label">Invoice number </label>
+                    <div class="col-sm-8">
+                        <input class="form-control" id="Invoice_Number" style="background-color:powderblue"  
                     name="Invoice_Number" aria-required="true" 
                     value="@Model.ProductInvoice.Invoice_Number" required/>
-                    <label>Invoice Number</label>
+                    </div>
                 </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Invoice_Date" 
-                    name="Invoice_Date" aria-required="true" 
+                <div class="form-group row">
+                    <label for="Invoice_Date" class="col-sm-2 col-form-label">Date of issue </label>
+                    <div class="col-sm-8">
+                        <input class="form-control" id="Invoice_Date" 
+                    name="Invoice_Date" aria-required="true"  style="background-color:powderblue" 
                     value="@Model.ProductInvoice.Invoice_Date" required/>
-                    <label>Invoice Date</label>
+                    </div>
                 </div>
-
+                 <div class="form-group row">
+                    <label for="Invoice_Due" class="col-sm-2 col-form-label">Due date </label>
+                    <div class="col-sm-8">
+                        <input type="date" class="form-control" id="Invoice_Due" 
+                            name="Invoice_Due" aria-required="true" required/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="AmountExclusive" class="col-sm-2 col-form-label">Amounts are </label>
+                    <div class="col-sm-8">
+                        <select class="form-control form-select-sm" id="AmountExclusive">
+                            <option>TAX Inclusive</option>
+                            <option>TAX Exclusive</option>
+                        </select>
+                    </div>
+                </div>
 
                 <p>Items</p>
                 <hr />
-                    @if (true)
-                    {
-                        var i = 0;
-                        
-                        foreach (var product in Model.ProductInvoice.Items)
-                        {
-                        var productMatch = Model.ProductMatches.Where(p => p.Product.Equals(product.Name)).FirstOrDefault();
-                        
-                            <div class="row g-3">
-
-                                @{
-                                    if (productMatch != null && productMatch.Invoiceproduct != null)
-                                    {
-                                        <div class="form-floating has-validation" style="margin-bottom:0.5em">
-                                            <input class="form-control is-valid" id="Product @product.Name" name="Product_@i" aria-required="true" value="@productMatch.Invoiceproduct.Name" readonly required/>
-                                            <label>Product Name</label>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span id="NotFound @product.Name" class="text-danger">No Item was found! please select from the list or create new item</span>
-                                        <div class="form-floating col-md-6" style="margin-bottom:0.5em; margin-right:100px">
-                                            <select id="Product @product.Name" name="Product_@i" data-item-id="@product.Name" class ="form-select  border-danger " asp-items="ViewBag.select" required >
-                                                <option value="" disabled selected>@product.Name</option>
-                                            </select>
-                                            <label>Product Name</label>
-                                            <div class="invalid-feedback">Please choose a Product or add new .</div>
-                                        </div>
-                                        <button class="btn btn-primary add-product-btn col-md-2" id="@product.Name" data-item-id="@product.Name" style="margin-right:20px">Add Product</button>
-                                        <button class="btn btn-danger remove-product-btn col-md-2" id="@product.Name" data-item-id="@product.Name" style="width:fit-content"> 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
-                                              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
-                                            </svg> Remove Item
-                                        </button>
-
-
-
-                                    }
-                                }
-                                
-                                <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control " id="Unit_@i" name="Unit_@i" aria-required="true" value="@product.Unit" required/>
-                                    <label>Unit</label>
-                                </div>
-                                <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="UnitPrice_@i" name="UnitPrice_@i" aria-required="true" value="@product.UnitPrice" required/>
-                                    <label>Unit Price</label>
-                                </div>
-                                <div class="form-floating col-md-4" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="Quantity_@i" name="Quantity_@i" aria-required="true" value="@product.Quantity" required/>
-                                    <label>Quantity</label>
-                                </div>
-                                <div class="form-floating has-validation" style="margin-bottom:0.5em">
-                                    <input class="form-control" id="Total_@i" name="Total_@i" aria-required="true" value="@product.Total" required/>
-                                    <label>Total</label>
-                                    <div class="invalid-tooltip"> Check the prices again</div>
-                                </div>
-                            </div>
-                            <hr />
-                            i++;
-                        }
-                        <script>
-                            var ItemNumber = @i;
-                        </script>
-                    }
-                   
-                   <div class="row g-3" id="generatedItemBlock" style="height:fit-content; min-height:2em">
-
-                   </div>
-                     <div class="text-end">
+                    <div class="row">
+                         <div class="text-end">
                         <button id="btn-addline" class="btn btn-primary " style="margin:1em;" > Add new line
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
                             <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13zm.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0z"/></svg> 
                         </button>
                         <br />
                     </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Subtotal" 
-                    name="Subtotal" aria-required="true" 
-                    value="@Model.ProductInvoice.Subtotal" required/>
-                    <label>Invoice SubTotal</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Tax" 
-                    name="Tax" aria-required="true" 
-                    value="@Model.ProductInvoice.Tax" required/>
-                    <label>Invoice TAX</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Total" 
-                name="Total" aria-required="true" 
-                value="@Model.ProductInvoice.Total" required/>
-                <label>Invoice Total</label>
-                </div>
+                        @if (true)
+    {
+        var i =0;
+        <table id="example" class="table">
+            <thead>
+                <tr>
+                    <th>index</th>
+                    <th>Product Name</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var product in Model.ProductInvoice.Items)
+                {
+                    var productMatch = Model.ProductMatches.Where(p => p.Product.Equals(product.Name)).FirstOrDefault();
+                    <tr class="Block_@i">
+                        <td>@i</td>
+                        @if (productMatch != null && productMatch.Invoiceproduct != null)
+                        {
+                            <td>@productMatch.Invoiceproduct.Name</td>
+                        }
+                        else
+                        {
+                            <td class="editable">
+                                <span id="NotFound @product.Name" class="text-danger">No Item was found! please select from the list or create new item</span>
+                                <select id="Product_@i" name="Product_@i" data-item-id="@product.Name" class="form-select border-danger" asp-items="ViewBag.select" required>
+                                    <option value="" disabled selected>@product.Name</option>
+                                </select>
+                                <div class="invalid-feedback">Please choose a Product or add new.</div>
+                            </td>
+                        }
+                        <td class="editable">
+                            <input class="form-control" id="Unit_@i" name="Unit_@i" aria-required="true" value="@product.Unit" required />
+                        </td>
+                        <td class="editable">
+                            <input class="form-control" id="UnitPrice_@i" name="UnitPrice_@i" aria-required="true" value="@product.UnitPrice" required />
+                        </td>
+                        <td class="editable">
+                            <input class="form-control" id="Quantity_@i" name="Quantity_@i" aria-required="true" value="@product.Quantity" required />
+                        </td>
+                        <td class="editable">
+                            <input class="form-control" id="Total_@i" name="Total_@i" aria-required="true" value="@product.Total" required />
+                            <div class="invalid-tooltip">Check the prices again</div>
+                        </td>
+                        <td colspan="5" >
+                            <button class="btn btn-primary add-product-btn" id="@product.Name" data-item-id="Block_@i"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                                                    </svg></button>
+                            <button class="btn btn-danger remove-product-btn" id="@product.Name" data-item-id="Block_@i">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z" />
+                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z" />
+                                </svg> 
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    i++;
+                    
+                }
+                
+                <tr>
+                    <td style="display:none"> 98</td>
+                    <td style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td>SubTotal</td>
+                    <td><input class="form-control" id="subtotal" value="@Model.ProductInvoice.Subtotal" /></td>
+                    
+                </tr>
+                <tr>
+                    <td style="display:none"> 99</td>
+                    <td style="border:0"> </td>
+                    <td  style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td>Tax</td>
+                    <td> <input value="@Model.ProductInvoice.Tax" class="form-control" id="tax" /></td>
+                    
+                </tr>
+                <tr>
+                    <td style="display:none"> 100</td>
+                    <td style="border:0"></td>
+                    <td style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td  style="border:0"></td>
+                    <td>Ammount due</td>
+                    <td> <input value="@Model.ProductInvoice.Total" class="form-control" id="total" /></td>
+                    
+                </tr>
+            </tbody>
+        </table>
+        <script>
+        var ItemNumber = @i;
+        </script>
+    }
+    
+                    </div>
+                   
             }
-
+            
+         
 
             @if (Model.UtilityInvoice != null)
             {
@@ -252,6 +294,8 @@
         </script>
 
         <button class="btn btn-success" type="submit">Submit</button>
+        
+
         </form>
       
    
@@ -301,4 +345,3 @@
 </div>
 
 <script src="~/js/Invoices/EditScript.js"></script>
-
