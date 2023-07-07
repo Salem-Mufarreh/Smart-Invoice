@@ -1,0 +1,204 @@
+﻿@model Smart_Invoice.Models.Sales.SalesInvoice
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create Invoice</h1>
+
+<hr />
+<form asp-action="Create"  class="row" style="justify-content:space-between">
+      <div class="col-md-4">
+         <div class="form-group">
+            <label asp-for="Customer.CustomerName" class="control-label"></label>
+            <input asp-for="Customer.CustomerName" class="form-control" />
+            <span asp-validation-for="Customer.CustomerName" class="text-danger"></span>
+        </div>
+
+         <div class="form-group">
+            <label asp-for="Customer.Address" class="control-label">Billing address</label>
+            <input asp-for="Customer.Address" class="form-control" />
+            <span asp-validation-for="Customer.Address" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="Invoice_number" class="control-label"></label>
+            <input asp-for="Invoice_number" class="form-control" />
+            <span asp-validation-for="Invoice_number" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="IssueDate" class="control-label"></label>
+            <input type="date" asp-for="IssueDate" class="form-control" />
+            <span asp-validation-for="IssueDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="DueDate" class="control-label"></label>
+            <input type="date" asp-for="DueDate" class="form-control" />
+            <span asp-validation-for="DueDate" class="text-danger"></span>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="form-group">
+            <br />
+            <input type="submit" value="Create" class="btn btn-primary" />
+            <input class="btn btn-primary" type="button" id="addRow" style="float:right" value="add Row"/>
+        </div>
+    </div>
+   
+
+    <div>
+        <table id="productTable" class="table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Description</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Discount (%)</th>
+                    <th>Amount (ILS)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="dtrg-group">
+                    <td><input type="text" class="form-control" name="Products[0].productId" /></td>
+                    <td><input type="text" class="form-control" name="Products[0].Product.Description" /></td>
+                    <td><input type="text" class="form-control" name="Products[0].Unit" /></td>
+                    <td><input type="text" class="form-control unitPrice-input" name="Products[0].UnitPrice" /></td>
+                    <td><input type="text" class="form-control quantity-input" name="Products[0].Quantity" /></td>
+                    <td><input type="text" class="form-control discount-input" name="Products[0].Discount" /></td>
+                    <td><input placeholder="0.00" class="form-control total-input" name="Products[0].Total" readonly /></td>
+                    <td><button class="btn btn-danger remove-row">Remove</button></td>
+
+                </tr>
+
+            </tbody>
+        </table>
+        <br />
+    </div>
+    <div class="row" style="justify-content:space-between">
+        <div class="col-md-4">
+            <div class="form-group ">
+                <label asp-for="Notes" class="control-label"></label>
+                <textarea asp-for="Notes" class="form-control" ></textarea>
+            </div>
+            <span asp-validation-for="Notes" class="text-danger"></span>
+
+        </div>
+        <style>
+            .d-flex input {
+                width:35%
+            }
+        </style>
+         <div class="col-md-3">
+            <div class="form-group d-flex" style="justify-content:space-between">
+                <label asp-for="SubTotal"  class="control-label">Subtotal</label>
+                <input asp-for="SubTotal" id="subtotal" class="form-control" readonly style="background-color:transparent"/>
+            </div>
+            <span asp-validation-for="SubTotal" class="text-danger"></span>
+            <div class="form-group d-flex" style="justify-content:space-between">
+                <label asp-for="Tax" class="control-label"></label>
+                <input asp-for="Tax" class="form-control" style="background-color:transparent" readonly/>
+            </div>
+                            <span asp-validation-for="Tax" class="text-danger"></span>
+
+            <div class="form-group d-flex" style="justify-content:space-between">
+                <label asp-for="Total" class="control-label">Total amount</label>
+                <input asp-for="Total" class="form-control" id="total" style="background-color:transparent" readonly/>
+            </div>
+            <span asp-validation-for="Total" class="text-danger"></span>
+
+            <div class="form-group  d-flex" style="justify-content:space-between">
+                <label asp-for="AmountPaid" class="control-label">Amount Paid (ILS)</label>
+                <input asp-for="AmountPaid" class="form-control" placeholder="0.00"  style="background-color:transparent;"/>
+            </div>
+            <span asp-validation-for="AmountPaid" class="text-danger"></span>
+
+            <div class="form-group d-flex" style="justify-content:space-between">
+                <label asp-for="BalanceDue" class="control-label">Balance Due</label>
+                <input asp-for="BalanceDue" class="form-control" style="background-color:transparent" readonly/>
+            </div>
+            <span asp-validation-for="BalanceDue" class="text-danger"></span>
+
+        </div>
+    </div>
+
+
+</form>
+
+
+    <a asp-action="Index">Back to List</a>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#productTable').DataTable({
+                ordering: false,
+                paging: false,
+                searching: false,
+            });
+            var i = 1;
+
+            // Add row button click event
+           $("#addRow").click(function addRow (event) {
+               event.preventDefault();
+                var rowNode = table.row.add([
+                    '<input type="text" class="form-control" name="Products['+i+'].productId" />',
+                    '<input type="text" class="form-control" name="Products['+i+'].Description" />',
+                    '<input type="text" class="form-control" name="Products['+i+'].Unit" />',
+                    '<input type="text" class="form-control unitPrice-input" name="Products['+i+'].UnitPrice"  />',
+                    '<input type="text" class="form-control quantity-input" name="Products['+i+'].Quantity" />',
+                    '<input type="text" class="form-control discount-input" name="Products['+i+'].Discount" />',
+                    '<input type="text" class="form-control total-input" name="Products['+i+'].Total" readonly />',
+                    '<button class="btn btn-danger remove-row">Remove</button>'
+                   
+                ]).draw(false).node();
+                 i++;
+                // Apply DataTables class to newly added row
+                $(rowNode).addClass('dtrg-group');
+
+                // Reinitialize row order
+                table.order([0, 'asc']).draw();
+           });
+
+            // Remove row button click event
+            $(document).on('click', '.remove-row', function () {
+                table.row($(this).closest('tr')).remove().draw();
+            });
+
+            $(document).on('input', '.quantity-input', '.discount-input', function () {
+                recalculateTotals();
+            });
+              $(document).on('input','.discount-input', function () {
+                recalculateTotals();
+            });
+            function recalculateTotals() {
+                var subTotal = 0;
+                $('.dtrg-group').each(function () {
+                    var quantity = $(this).find('.quantity-input').val();
+                    var unitPrice = $(this).find('.unitPrice-input').val();
+                    var discount = $(this).find('.discount-input').val();
+                    var total = (unitPrice - (unitPrice*discount)/100)*quantity;
+                    $(this).find('.total-input').val(total.toFixed(2));
+                    subTotal += total;
+                });
+
+                // Update the subtotal
+                $('#subtotal').val(subTotal.toFixed(2));
+                $('#total').val(subTotal.toFixed(2));
+            }
+        
+        }); 
+    </script>
+}
