@@ -12,14 +12,16 @@
 <form asp-action="Create"  class="row" style="justify-content:space-between">
       <div class="col-md-4">
          <div class="form-group">
-            <label asp-for="Customer.CustomerName" class="control-label"></label>
-            <input asp-for="Customer.CustomerName" class="form-control" />
+            <label asp-for="Customer.CustomerName" class="control-label "></label>
+            <select asp-for="Customer.CustomerName" class="form-select" id="customerDropDown" >
+                <option value="">Select a customer</option>
+            </select>
             <span asp-validation-for="Customer.CustomerName" class="text-danger"></span>
         </div>
 
          <div class="form-group">
             <label asp-for="Customer.Address" class="control-label">Billing address</label>
-            <input asp-for="Customer.Address" class="form-control" />
+            <input asp-for="Customer.Address" class="form-control address-input" />
             <span asp-validation-for="Customer.Address" class="text-danger"></span>
         </div>
     </div>
@@ -142,6 +144,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" />
 
     <script>
+        var Customers;
         $(document).ready(function () {
             var table = $('#productTable').DataTable({
                 ordering: false,
@@ -175,13 +178,20 @@
             // Remove row button click event
             $(document).on('click', '.remove-row', function () {
                 table.row($(this).closest('tr')).remove().draw();
+                recalculateTotals();
             });
 
             $(document).on('input', '.quantity-input', '.discount-input', function () {
                 recalculateTotals();
             });
-              $(document).on('input','.discount-input', function () {
+            $(document).on('input','.discount-input', function () {
                 recalculateTotals();
+            });
+            $(document).on('input','#customerDropDown', function () {
+                var dropdown = $("#customerDropDown");
+                var address = $(".address-input");
+                var index = dropdown.val()
+                address.val(Customers[index-1].address);
             });
             function recalculateTotals() {
                 var subTotal = 0;
@@ -198,7 +208,25 @@
                 $('#subtotal').val(subTotal.toFixed(2));
                 $('#total').val(subTotal.toFixed(2));
             }
-        
+                var dropdown = $("#customerDropDown");
+            $.ajax({
+                url: '/Accountant/Companies/GetCustomerList',
+                method : 'GET',
+                success : function(data){
+                    Customers = data;
+                    for (var i =0 ; i<data.length; i++){
+                        var customer = data[i];
+                        var option = $('<option></opttion>').attr('value',customer.customerId).text(customer.customerName);
+                        dropdown.append(option);
+                    }
+                   
+
+                }
+            })
         }); 
+    
+    </script>
+    <script>
+
     </script>
 }

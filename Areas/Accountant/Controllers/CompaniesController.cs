@@ -232,6 +232,18 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return Task.FromResult<IActionResult>(NotFound());
             }
         }
+        [HttpGet]
+        public JsonResult GetCustomerList()
+        {
+            // Retrieve the customer list from your data source
+            var customers = _context.Customers.ToList();
+
+            // Transform the customer data into a format suitable for JSON serialization
+          
+
+            // Return the customer data as JSON
+            return Json(customers);
+        }
 
         #endregion
     }
