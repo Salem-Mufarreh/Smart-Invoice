@@ -12,11 +12,11 @@
 <form asp-action="Create"  class="row" style="justify-content:space-between">
       <div class="col-md-4">
          <div class="form-group">
-            <label asp-for="Customer.CustomerName" class="control-label "></label>
-            <select asp-for="Customer.CustomerName" class="form-select" id="customerDropDown" >
+            <label asp-for="Customer.CustomerId" class="control-label "></label>
+            <select asp-for="Customer.CustomerId" class="form-select" id="customerDropDown" >
                 <option value="">Select a customer</option>
             </select>
-            <span asp-validation-for="Customer.CustomerName" class="text-danger"></span>
+            <span asp-validation-for="Customer.CustomerId" class="text-danger"></span>
         </div>
 
          <div class="form-group">
@@ -48,7 +48,7 @@
     <div class="row">
         <div class="form-group">
             <br />
-            <input type="submit" value="Create" class="btn btn-primary" />
+           
             <input class="btn btn-primary" type="button" id="addRow" style="float:right" value="add Row"/>
         </div>
     </div>
@@ -70,9 +70,9 @@
             </thead>
             <tbody>
                 <tr class="dtrg-group">
-                    <td><input type="text" class="form-control" name="Products[0].productId" /></td>
-                    <td><input type="text" class="form-control" name="Products[0].Product.Description" /></td>
-                    <td><input type="text" class="form-control" name="Products[0].Unit" /></td>
+                    <td><input type="text" class="form-control prductId-input" name="Products[0].productId" /></td>
+                    <td><select class="form-select  product_dropdown" name="Products[0].Product.Name" /></td>
+                    <td><input type="text" class="form-control unit-input" name="Products[0].Unit" /></td>
                     <td><input type="text" class="form-control unitPrice-input" name="Products[0].UnitPrice" /></td>
                     <td><input type="text" class="form-control quantity-input" name="Products[0].Quantity" /></td>
                     <td><input type="text" class="form-control discount-input" name="Products[0].Discount" /></td>
@@ -117,22 +117,24 @@
             </div>
             <span asp-validation-for="Total" class="text-danger"></span>
 
-            <div class="form-group  d-flex" style="justify-content:space-between">
+            <div class="form-group d-flex" style="justify-content:space-between">
                 <label asp-for="AmountPaid" class="control-label">Amount Paid (ILS)</label>
-                <input asp-for="AmountPaid" class="form-control" placeholder="0.00"  style="background-color:transparent;"/>
+                <input asp-for="AmountPaid" class="form-control paid-input " placeholder="0.00"  style="background-color:transparent;"/>
             </div>
             <span asp-validation-for="AmountPaid" class="text-danger"></span>
 
             <div class="form-group d-flex" style="justify-content:space-between">
                 <label asp-for="BalanceDue" class="control-label">Balance Due</label>
-                <input asp-for="BalanceDue" class="form-control" style="background-color:transparent" readonly/>
+                <input asp-for="BalanceDue" class="form-control due-input" style="background-color:transparent" readonly/>
             </div>
             <span asp-validation-for="BalanceDue" class="text-danger"></span>
 
         </div>
     </div>
+    <div style="display: flex; justify-content: center;">
+             <input type="submit" value="Create" class="btn btn-primary" />
 
-
+    </div>
 </form>
 
 
@@ -145,6 +147,7 @@
 
     <script>
         var Customers;
+        var Products;
         $(document).ready(function () {
             var table = $('#productTable').DataTable({
                 ordering: false,
@@ -157,9 +160,9 @@
            $("#addRow").click(function addRow (event) {
                event.preventDefault();
                 var rowNode = table.row.add([
-                    '<input type="text" class="form-control" name="Products['+i+'].productId" />',
-                    '<input type="text" class="form-control" name="Products['+i+'].Description" />',
-                    '<input type="text" class="form-control" name="Products['+i+'].Unit" />',
+                    '<input type="text" class="form-control prductId-input" name="Products['+i+'].productId" />',
+                    '<select class="form-select product_dropdown" name="Products['+i+'].Name" ></select>',
+                    '<input type="text" class="form-control unit-input" name="Products['+i+'].Unit" />',
                     '<input type="text" class="form-control unitPrice-input" name="Products['+i+'].UnitPrice"  />',
                     '<input type="text" class="form-control quantity-input" name="Products['+i+'].Quantity" />',
                     '<input type="text" class="form-control discount-input" name="Products['+i+'].Discount" />',
@@ -173,6 +176,7 @@
 
                 // Reinitialize row order
                 table.order([0, 'asc']).draw();
+                populateItemDrop(Products);
            });
 
             // Remove row button click event
@@ -193,8 +197,21 @@
                 var index = dropdown.val()
                 address.val(Customers[index-1].address);
             });
+            
+            $(document).on('change', '.product_dropdown', function () {
+                var selectedValue = $(this).val();
+                var unitInput = $(this).closest('tr').find('.unitPrice-input');
+                var id = $(this).closest('tr').find(".prductId-input");
+                id.val(selectedValue);
+                var selectedProduct = Products.find(function (product) {
+                    return product.productId === parseInt(selectedValue);
+                });
+                unitInput.val(selectedProduct.price);
+            });
+
             function recalculateTotals() {
                 var subTotal = 0;
+                var paid = $(".paid-input").val();
                 $('.dtrg-group').each(function () {
                     var quantity = $(this).find('.quantity-input').val();
                     var unitPrice = $(this).find('.unitPrice-input').val();
@@ -207,8 +224,9 @@
                 // Update the subtotal
                 $('#subtotal').val(subTotal.toFixed(2));
                 $('#total').val(subTotal.toFixed(2));
+                $(".due-input").val((subTotal-paid).toFixed(2));
             }
-                var dropdown = $("#customerDropDown");
+                var Customerdropdown = $("#customerDropDown");
             $.ajax({
                 url: '/Accountant/Companies/GetCustomerList',
                 method : 'GET',
@@ -217,16 +235,31 @@
                     for (var i =0 ; i<data.length; i++){
                         var customer = data[i];
                         var option = $('<option></opttion>').attr('value',customer.customerId).text(customer.customerName);
-                        dropdown.append(option);
+                        Customerdropdown.append(option);
                     }
                    
 
+                }
+            })
+            $.ajax({
+                url:'/Accountant/Products/GetAllProducts',
+                method:'GET',
+                success: function(data){
+                    Products = data;
+                    populateItemDrop(data);
                 }
             })
         }); 
     
     </script>
     <script>
-
+        function populateItemDrop(data){
+            var ItemDropdown = $(".product_dropdown");
+                    for (var i =0 ; i<data.length; i++){
+                        var product = data[i];
+                        var option = $('<option></opttion>').attr('value',product.productId).text(product.name);
+                        ItemDropdown.append(option);
+                    }
+        }
     </script>
 }

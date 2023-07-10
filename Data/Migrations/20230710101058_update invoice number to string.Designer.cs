@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230710101058_update invoice number to string")]
+    partial class updateinvoicenumbertostring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -433,6 +435,9 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired()
                         .HasColumnType("int");
 
+                    b.Property<int?>("SalesInvoiceId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Total")
                         .HasColumnType("float");
 
@@ -448,6 +453,8 @@ namespace Smart_Invoice.Data.Migrations
                     b.HasKey("InvoiceItemId");
 
                     b.HasIndex("ProductInvoiceId");
+
+                    b.HasIndex("SalesInvoiceId");
 
                     b.HasIndex("productId");
 
@@ -509,18 +516,12 @@ namespace Smart_Invoice.Data.Migrations
                     b.Property<string>("SKU")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("SalesInvoiceId")
-                        .HasColumnType("int")
-                        .HasColumnName("SalesInvoiceId");
-
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("SalesInvoiceId");
 
                     b.ToTable("Products");
                 });
@@ -843,6 +844,10 @@ namespace Smart_Invoice.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Smart_Invoice.Models.Sales.SalesInvoice", null)
+                        .WithMany("Products")
+                        .HasForeignKey("SalesInvoiceId");
+
                     b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
                         .WithMany()
                         .HasForeignKey("productId");
@@ -857,10 +862,6 @@ namespace Smart_Invoice.Data.Migrations
                     b.HasOne("Smart_Invoice.Models.Products.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId");
-
-                    b.HasOne("Smart_Invoice.Models.Sales.SalesInvoice", null)
-                        .WithMany("Products")
-                        .HasForeignKey("SalesInvoiceId");
 
                     b.Navigation("Category");
                 });

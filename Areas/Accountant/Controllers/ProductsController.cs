@@ -290,6 +290,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 }
             }
         }
+
+        [HttpGet]
+        public JsonResult GetAllProducts()
+        {
+            List<Product> products = _context.Products.ToList();
+            return Json(products);
+        }
        
         #endregion
     }

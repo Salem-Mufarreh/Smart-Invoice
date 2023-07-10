@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Smart_Invoice.Data;
+using Smart_Invoice.Models;
+using Smart_Invoice.Models.Invoices;
+using Smart_Invoice.Models.Products;
 using Smart_Invoice.Models.Sales;
 
 namespace Smart_Invoice.Areas.Accountant.Controllers
@@ -42,6 +46,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 return NotFound();
             }
+            else
+            {
+                salesInvoice.Products = _context.Products.Where(p=> p.SalesInvoiceId == id).ToList();
+            }
+            
 
             return View(salesInvoice);
         }
@@ -50,9 +59,10 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public IActionResult Create()
         {
             SalesInvoice invoice = new SalesInvoice();
+            invoice.Invoice_number = "23/00002569";
             invoice.Customer = new Models.Customer();
             invoice.Notes = "";
-            invoice.Products = new List<Models.Invoices.InvoiceItem>();
+            invoice.Products = new List<Product>();
             invoice.IssueDate = DateTime.Today;
             invoice.DueDate = DateTime.Now;
             return View(invoice);
@@ -65,7 +75,15 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SalesInvoice salesInvoice)
         {
-            if (ModelState.IsValid)
+            ModelState.ClearValidationState(key:"Customer");
+            salesInvoice.Customer = _context.Customers.Where(c => c.CustomerId.Equals(salesInvoice.Customer.CustomerId)).FirstOrDefault();
+            for (var i=0; i<salesInvoice.Products.Count;i++ )
+            {
+                salesInvoice.Products[i] = _context.Products.Where(p => p.ProductId.Equals(salesInvoice.Products[i].ProductId)).FirstOrDefault();
+            }
+
+            bool isvalid = TryValidateModel(salesInvoice);
+            if (ModelState.IsValid) 
             {
                 _context.Add(salesInvoice);
                 await _context.SaveChangesAsync();
