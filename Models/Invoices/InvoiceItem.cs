@@ -35,7 +35,7 @@ namespace Smart_Invoice.Models.Invoices
         public virtual Product? Product { get; set; }
         public int ProductInvoiceId { get; set; }
         [ForeignKey("ProductInvoiceId")]
-        public virtual Product_Invoice ProductInvoice { get; set; }
+        public virtual Product_Invoice? ProductInvoice { get; set; }
 
         public double Discount { get; set; }
 

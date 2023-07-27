@@ -22,288 +22,332 @@
   We had a go at filling in some of your data. Check that the <span style="background-color: powderblue;padding:5px;">pre-filled details in blue</span> are correct.
   
 </div>
-<div class="row">
-  <!-- Column 1 content -->
-  <div class="column" style="width:40%">
-    <img src="data:image/png;base64,@ViewBag.Base64Image" width="100%"/>
+ <form method="post" id="EditForm" class="needs-validation" novalidate>
+    <div class="row">
+        <!-- Column 1 content -->
+        <div class="column" style="width:40%">
+            <img src="data:image/png;base64,@ViewBag.Base64Image" width="60%" onclick="openPopup()"/>
+            <div class="popup" id="popup-container">
+                <!-- Popup content (image) -->
+                <img src="data:image/png;base64,@ViewBag.Base64Image" class="popup-content" id="popup-image" alt="Large Image">
 
-  </div>
-
-  <!-- Column 2 content -->
-  <div class="column" style="width:60%">
-      @if (!ViewData.ModelState.IsValid)
-        {
-            <div class="alert alert-danger" role="alert">
-                @Html.ValidationSummary(true)
+                <!-- Close button -->
+                <span class="close-btn" onclick="closePopup()">&times;</span>
             </div>
-        }
-        <form method="post" id="EditForm" novalidate>
-        @Html.AntiForgeryToken()
-            @if (Model.ProductInvoice != null)
+        </div>
+        <style>
+              /* Popup container */
+            .popup {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                padding-top: 100px;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.9);
+            }
+
+      /* Popup content (image) */
+            .popup-content {
+                margin: auto;
+                display: block;
+   
+            }
+
+    
+            .close-btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                font-size: 30px;
+                color: #f1f1f1;
+                cursor: pointer;
+            }
+        </style>
+        <div class="column" style="width:60%">
+            @if (!ViewData.ModelState.IsValid)
             {
-                <div class="form-group row">
-                    <label for="Company_Name" class="col-sm-2 col-form-label">Supplier: </label>
-                    <div class="col-sm-8">
-                        <select class="form-select" id="Company_Name" name="Company.Company_Name" 
-                    aria-required="true" asp-items="ViewBag.Companies" required></select>
-                    </div>
-                    <button class="btn btn-primary add-company-btn col-md-2" id="@Model.ProductInvoice.Company.Company_Name">Create Company</button>
+                <div class="alert alert-danger" role="alert">
+                    @Html.ValidationSummary(true)
                 </div>
+            }
+       
+            @Html.AntiForgeryToken()
+                @if (Model.ProductInvoice != null)
+                {
+                    <div class="form-group row">
+                    
+                        @if(ViewData["companyFound"]== "notFound")
+                        {
+                            <span class="text-danger"> Company was not found ! please select a supplier</span>
+                            <label for="Company_Name" class="col-sm-2 col-form-label">Supplier: </label>
+                            <div class="col-sm-8">
+                            <select class="form-select is-invalid" id="Company_Name" asp-for="ProductInvoice.Company.Company_Name" aria-required="true" asp-items="ViewBag.Companies" required></select>
+                            </div>
+                            <button class="btn btn-primary add-company-btn col-md-2" id="@Model.ProductInvoice.Company.Company_Name">Create Company</button>
+                        }
+                        else{
+                            <label for="Company_Name" class="col-sm-2 col-form-label">Supplier: </label>
+                            <div class="col-sm-8">
+                            <select class="form-select" id="Company_Name" asp-for="ProductInvoice.Company.Company_Name" aria-required="true" asp-items="ViewBag.Companies" required></select>
+                            </div>
+                        }
+                    </div>
                     
                  
-                <div class="form-group row">
-                    <label for="Invoice_Number" class="col-sm-2 col-form-label">Invoice number </label>
-                    <div class="col-sm-8">
-                        <input class="form-control" id="Invoice_Number" style="background-color:powderblue"  
-                    name="Invoice_Number" aria-required="true" 
-                    value="@Model.ProductInvoice.Invoice_Number" required/>
+                    <div class="form-group row">
+                        <label for="Invoice_Number" class="col-sm-2 col-form-label">Invoice number </label>
+                        <div class="col-sm-8">
+                            <input class="form-control" id="Invoice_Number" style="background-color:powderblue"  
+                        asp-for="ProductInvoice.Invoice_Number" aria-required="true" 
+                        value="@Model.ProductInvoice.Invoice_Number" required/>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="Invoice_Date" class="col-sm-2 col-form-label">Date of issue </label>
-                    <div class="col-sm-8">
-                        <input class="form-control" id="Invoice_Date" 
-                    name="Invoice_Date" aria-required="true"  style="background-color:powderblue" 
-                    value="@Model.ProductInvoice.Invoice_Date" required/>
+                    <div class="form-group row">
+                        <label for="Invoice_Date" class="col-sm-2 col-form-label">Date of issue </label>
+                        <div class="col-sm-8">
+                            <input class="form-control" id="Invoice_Date" 
+                        asp-for="ProductInvoice.Invoice_Date" aria-required="true"  style="background-color:powderblue" 
+                        value="@Model.ProductInvoice.Invoice_Date" required/>
+                        </div>
                     </div>
-                </div>
-                 <div class="form-group row">
-                    <label for="Invoice_Due" class="col-sm-2 col-form-label">Due date </label>
-                    <div class="col-sm-8">
-                        <input type="date" class="form-control" id="Invoice_Due" 
-                            name="Invoice_Due" aria-required="true" required/>
+                     <div class="form-group row">
+                        <label for="Invoice_Due" class="col-sm-2 col-form-label">Due date </label>
+                        <div class="col-sm-8">
+                            <input type="date" class="form-control" id="Invoice_Due" 
+                                name="Invoice_Due" aria-required="true" required/>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="AmountExclusive" class="col-sm-2 col-form-label">Amounts are </label>
-                    <div class="col-sm-8">
-                        <select class="form-control form-select-sm" id="AmountExclusive">
-                            <option>TAX Inclusive</option>
-                            <option>TAX Exclusive</option>
-                        </select>
+                    <div class="form-group row">
+                        <label for="AmountExclusive" class="col-sm-2 col-form-label">Amounts are </label>
+                        <div class="col-sm-8">
+                            <select class="form-control form-select-sm" id="AmountExclusive">
+                                <option>TAX Inclusive</option>
+                                <option>TAX Exclusive</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                     <div class="form-group row">
+                        <label asp-for="ProductInvoice.CurrancyCode" class="col-sm-2 col-form-label"> </label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="Invoice_Due" 
+                                asp-for="ProductInvoice.CurrancyCode" aria-required="true" required/>
+                        </div>
+                    </div>
 
-                <p>Items</p>
-                <hr />
-                    <div class="row">
-                         <div class="text-end">
-                        <button id="btn-addline" class="btn btn-primary " style="margin:1em;" > Add new line
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
-                            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13zm.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0z"/></svg> 
-                        </button>
-                        <br />
-                    </div>
-                        @if (true)
-    {
-        var i =0;
-        <table id="example" class="table">
-            <thead>
-                <tr>
-                    <th>index</th>
-                    <th>Product Name</th>
-                    <th>Unit</th>
-                    <th>Unit Price</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var product in Model.ProductInvoice.Items)
-                {
-                    var productMatch = Model.ProductMatches.Where(p => p.Product.Equals(product.Name)).FirstOrDefault();
-                    <tr class="Block_@i">
-                        <td>@i</td>
-                        @if (productMatch != null && productMatch.Invoiceproduct != null)
-                        {
-                            <td>@productMatch.Invoiceproduct.Name</td>
-                        }
-                        else
-                        {
-                            <td class="editable">
-                                <span id="NotFound @product.Name" class="text-danger">No Item was found! please select from the list or create new item</span>
-                                <select id="Product_@i" name="Product_@i" data-item-id="@product.Name" class="form-select border-danger" asp-items="ViewBag.select" required>
-                                    <option value="" disabled selected>@product.Name</option>
-                                </select>
-                                <div class="invalid-feedback">Please choose a Product or add new.</div>
-                            </td>
-                        }
-                        <td class="editable">
-                            <input class="form-control" id="Unit_@i" name="Unit_@i" aria-required="true" value="@product.Unit" required />
-                        </td>
-                        <td class="editable">
-                            <input class="form-control" id="UnitPrice_@i" name="UnitPrice_@i" aria-required="true" value="@product.UnitPrice" required />
-                        </td>
-                        <td class="editable">
-                            <input class="form-control" id="Quantity_@i" name="Quantity_@i" aria-required="true" value="@product.Quantity" required />
-                        </td>
-                        <td class="editable">
-                            <input class="form-control" id="Total_@i" name="Total_@i" aria-required="true" value="@product.Total" required />
-                            <div class="invalid-tooltip">Check the prices again</div>
-                        </td>
-                        <td colspan="5" >
-                            <button class="btn btn-primary add-product-btn" id="@product.Name" data-item-id="Block_@i"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                                                                    </svg></button>
-                            <button class="btn btn-danger remove-product-btn" id="@product.Name" data-item-id="Block_@i">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z" />
-                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z" />
-                                </svg> 
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    i++;
-                    
-                }
                 
-                <tr>
-                    <td style="display:none"> 98</td>
-                    <td style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td>SubTotal</td>
-                    <td><input class="form-control" id="subtotal" value="@Model.ProductInvoice.Subtotal" /></td>
-                    
-                </tr>
-                <tr>
-                    <td style="display:none"> 99</td>
-                    <td style="border:0"> </td>
-                    <td  style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td>Tax</td>
-                    <td> <input value="@Model.ProductInvoice.Tax" class="form-control" id="tax" /></td>
-                    
-                </tr>
-                <tr>
-                    <td style="display:none"> 100</td>
-                    <td style="border:0"></td>
-                    <td style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td  style="border:0"></td>
-                    <td>Ammount due</td>
-                    <td> <input value="@Model.ProductInvoice.Total" class="form-control" id="total" /></td>
-                    
-                </tr>
-            </tbody>
-        </table>
-        <script>
-        var ItemNumber = @i;
-        </script>
-    }
-    
-                    </div>
+                
+                  
                    
-            }
+                }
             
          
 
-            @if (Model.UtilityInvoice != null)
-            {
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Company_Name" 
-                    name="Company.Company_Name" aria-required="true" 
-                    value="@Model.UtilityInvoice.Company.Company_Name" required/>
-                    <label>Company Name</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Invoice_Number" 
-                    name="Invoice_Number" aria-required="true" 
-                    value="@Model.UtilityInvoice.Invoice_Number" required/>
-                    <label>Invoice Number</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Invoice_Date" 
-                    name="Invoice_Date" aria-required="true" 
-                    value="@Model.UtilityInvoice.Invoice_Date" required/>
-                    <label>Invoice Date</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Service_Number" 
-                    name="Service_Number" aria-required="true" 
-                    value="@Model.UtilityInvoice.Service_Number" required/>
-                    <label>Serice Number</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Meter_Number" 
-                    name="Meter_Number" aria-required="true" 
-                    value="@Model.UtilityInvoice.Meter_Number" required/>
-                    <label>Meter Number</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Previous_Reading_Date" 
-                    name="Previous_Reading_Date" aria-required="true" 
-                    value="@Model.UtilityInvoice.Previous_Reading_Date" required/>
-                    <label>Previous Reading Date</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Current_Reading" 
-                    name="Current_Reading" aria-required="true" 
-                    value="@Model.UtilityInvoice.Current_Reading" required/>
-                    <label>Current Reading</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Category" 
-                    name="Category" aria-required="true" 
-                    value="@Model.UtilityInvoice.Category" required/>
-                    <label>Category</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Previous_Debt" 
-                    name="Previous_Debt" aria-required="true" 
-                    value="@Model.UtilityInvoice.Previous_Debt" required/>
-                    <label>Previous Debt</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Subtotal" 
-                    name="Subtotal" aria-required="true" 
-                    value="@Model.UtilityInvoice.Subtotal" required/>
-                    <label>Invoice SubTotal</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Tax" 
-                    name="Tax" aria-required="true" 
-                    value="@Model.UtilityInvoice.Tax" required/>
-                    <label>Invoice TAX</label>
-                </div>
-                <div class="form-floating" style="margin-bottom:0.5em">
-                    <input class="form-control" id="Total" 
-                name="Total" aria-required="true" 
-                value="@Model.UtilityInvoice.Total" required/>
-                <label>Invoice Total</label>
-                </div>
+                @if (Model.UtilityInvoice != null)
+                {
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Company_Name" 
+                        asp-for="UtilityInvoice.Company.Company_Name" aria-required="true" 
+                        value="@Model.UtilityInvoice.Company.Company_Name" required/>
+                        <label>Company Name</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Invoice_Number" 
+                        asp-for="UtilityInvoice.Invoice_Number" aria-required="true" 
+                        value="@Model.UtilityInvoice.Invoice_Number" required/>
+                        <label>Invoice Number</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Invoice_Date" 
+                        asp-for="UtilityInvoice.Invoice_Date" aria-required="true" 
+                        value="@Model.UtilityInvoice.Invoice_Date" required/>
+                        <label>Invoice Date</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Service_Number" 
+                        asp-for="UtilityInvoice.Service_Number" aria-required="true" 
+                        value="@Model.UtilityInvoice.Service_Number" required/>
+                        <label>Serice Number</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Meter_Number" 
+                        asp-for="UtilityInvoice.Meter_Number" aria-required="true" 
+                        value="@Model.UtilityInvoice.Meter_Number" required/>
+                        <label>Meter Number</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Previous_Reading_Date" 
+                        asp-for="UtilityInvoice.Previous_Reading_Date" aria-required="true" 
+                        value="@Model.UtilityInvoice.Previous_Reading_Date" required/>
+                        <label>Previous Reading Date</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Current_Reading" 
+                        asp-for="UtilityInvoice.Current_Reading" aria-required="true" 
+                        value="@Model.UtilityInvoice.Current_Reading" required/>
+                        <label>Current Reading</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Category" 
+                        asp-for="UtilityInvoice.Category" aria-required="true" 
+                        value="@Model.UtilityInvoice.Category" required/>
+                        <label>Category</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Previous_Debt" 
+                        asp-for="UtilityInvoice.Previous_Debt" aria-required="true" 
+                        value="@Model.UtilityInvoice.Previous_Debt" required/>
+                        <label>Previous Debt</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Subtotal" 
+                        asp-for="UtilityInvoice.Subtotal" aria-required="true" 
+                        value="@Model.UtilityInvoice.Subtotal" required/>
+                        <label>Invoice SubTotal</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Tax" 
+                        asp-for="UtilityInvoice.Tax" aria-required="true" 
+                        value="@Model.UtilityInvoice.Tax" required/>
+                        <label>Invoice TAX</label>
+                    </div>
+                    <div class="form-floating" style="margin-bottom:0.5em">
+                        <input class="form-control" id="Total" 
+                    asp-for="UtilityInvoice.Total" aria-required="true" 
+                    value="@Model.UtilityInvoice.Total" required/>
+                    <label>Invoice Total</label>
+                    </div>
 
-            }
+                }
             
-        <script>
-            if(@ViewBag.Company_License_Registration_Number != null){
-                document.getElementById("Company_License_Registration_Number").value = @ViewBag.Company_License_Registration_Number;
-                document.getElementById("Company_License_Registration_Number").readOnly = true;
-                document.getElementById("Incoive_Companay").readOnly = true;
-
-            }
-               
-                
-            
-
-        </script>
-
-        <button class="btn btn-success" type="submit">Submit</button>
-        
-
-        </form>
       
    
-  </div>
-  
-</div>
+        </div>
+        
+        <div>
+            <h4>Products</h4>
+            <hr />
+            <input class="btn btn-primary" type="button" id="addRow" style="float:right" value="add Row" />
 
+             <table id="productTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit</th>
+                        <th>Unit Price</th>
+                        <th>Quantity</th>
+                        <th>Discount (%)</th>
+                        <th>Amount (ILS)</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
 
+                <tbody>
+                    @{
+                        var k = 0;
+                        foreach(var product in Model.ProductInvoice.Items)
+                        {
+                              
+                            var InvProduct = Model.ProductMatches.Where(p => p.Product.ToLower().Equals(product.Name.ToLower())).FirstOrDefault();
+                            <tr class="dtrg-group">
+                                <td>
+                                    @if(Model.ProductMatches.Count>=k && InvProduct == null || Model.ProductMatches.Count>=k &&  InvProduct.Invoiceproduct == null)
+                                    {
+                                        <span class="text-danger">Product was not found </span>
+                                        <input type="text" class="form-control unit-input is-invalid" asp-for="ProductInvoice.Items[k].Name" value="@product.Name" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="form-control unit-input" asp-for="ProductInvoice.Items[k].Name" value="@InvProduct.Invoiceproduct.Name" />
+                                    }
+                                    
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control unit-input" asp-for="ProductInvoice.Items[k].Unit" value="@product.Unit" placeholder="PCS" required />
+                                </td>
+                                <td>
+                                    @if(InvProduct == null)
+                                    {
+                                        <input type="text" class="form-control unitPrice-input" asp-for="ProductInvoice.Items[k].UnitPrice" value="@product.UnitPrice" />
+
+                                    }
+                                    else
+                                    {
+                                        if (InvProduct.Invoiceproduct != null)
+                                        {
+                                            if (InvProduct.Invoiceproduct.CostPrice != product.UnitPrice)
+                                            {
+                                                <span class="text-danger">Stored price is: @InvProduct.Invoiceproduct.CostPrice</span>
+                                                <input type="text" class="form-control unitPrice-input" asp-for="ProductInvoice.Items[k].UnitPrice" value="@product.UnitPrice" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control unitPrice-input" asp-for="ProductInvoice.Items[k].UnitPrice" value="@product.UnitPrice" />
+                                        }
+                                    }
+
+                                </td>
+                                <td><input type="text" class="form-control quantity-input" asp-for="ProductInvoice.Items[k].Quantity" value="@product.Quantity" /></td>
+                                <td><input type="text" class="form-control discount-input" asp-for="ProductInvoice.Items[k].Discount" value="@product.Discount" /></td>
+                                <td><input placeholder="0.00" class="form-control total-input" asp-for="ProductInvoice.Items[k].Total"  value="@product.Total" /></td>
+                                <td><button class="btn btn-danger remove-row">Remove</button></td>
+                                <td>
+                                    @if(InvProduct== null || InvProduct.Invoiceproduct == null)
+                                    {
+                                         <button class="btn btn-info add-product text-white" style="display:flex">
+                                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF"><path d="M0 0h24v24H0z" fill="none"/><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                         Product</button>
+                                    }
+                                </td>
+                            </tr>
+                            k++;
+                        }
+                     
+                    }
+                    
+
+                </tbody>
+            </table>
+            <div class="row" style="flex-direction:row-reverse">
+                
+                <style>
+                    .d-flex input {
+                        width:35%
+                    }
+                </style>
+                <div class="col-md-3 m-2">
+                    <div class="form-group d-flex" style="justify-content:space-between">
+                        <label asp-for="ProductInvoice.Subtotal"  class="control-label">Subtotal</label>
+                        <input asp-for="ProductInvoice.Subtotal" id="subtotal" class="form-control"  style="background-color:transparent"/>
+                    </div>
+                    <span asp-validation-for="ProductInvoice.Subtotal" class="text-danger"></span>
+                    <div class="form-group d-flex" style="justify-content:space-between">
+                        <label asp-for="ProductInvoice.Tax" class="control-label"></label>
+                        <input asp-for="ProductInvoice.Tax" id="tax" class="form-control" style="background-color:transparent" />
+                    </div>
+                                    <span asp-validation-for="ProductInvoice.Tax" class="text-danger"></span>
+
+                    <div class="form-group d-flex" style="justify-content:space-between">
+                        <label asp-for="ProductInvoice.Total" class="control-label">Total amount</label>
+                        <input asp-for="ProductInvoice.Total" class="form-control" id="total" style="background-color:transparent" />
+                    </div>
+                    <span asp-validation-for="ProductInvoice.Total" class="text-danger"></span>
+
+                    
+
+                    
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center;">
+               <button class="btn btn-success" type="submit">Submit</button>
+            </div>
+        </div>
+    </form>
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -331,14 +375,99 @@
     </div>
   </div>
 </div>
+           
+
 @*
     TODO: add zoom button using scale
     TODO: add Rotate button using transform: rotate(90deg)
 *@
+@section Scripts {
+      @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" />
+    <script>
+        $(document).ready(function () {
+            var table = $('#productTable').DataTable({
+                ordering: false,
+                paging: false,
+                searching: false,
+            });
+            var i = 1;
+            recalculateTotals();
 
-<script>
-    var viewModel = @Model;
-</script>
+            // Add row button click event
+            $("#addRow").click(function addRow (event) {
+                event.preventDefault();
+                var rowNode = table.row.add([
+                    '<input type="text" class="form-control unit-input" name="Products['+i+'].Name" ></select>',
+                    '<input type="text" class="form-control unit-input" name="Products['+i+'].Unit" />',
+                    '<input type="text" class="form-control unitPrice-input" name="Products['+i+'].UnitPrice"  />',
+                    '<input type="text" class="form-control quantity-input" name="Products['+i+'].Quantity" />',
+                    '<input type="text" class="form-control discount-input" name="Products['+i+'].Discount" />',
+                    '<input type="text" class="form-control total-input" name="Products['+i+'].Total"  />',
+                    '<button class="btn btn-danger remove-row">Remove</button>',
+                    ''
+
+                   
+                ]).draw(false).node();
+                recalculateTotals();
+                i++;
+                // Apply DataTables class to newly added row
+                $(rowNode).addClass('dtrg-group');
+
+                // Reinitialize row order
+                table.order([0, 'asc']).draw();
+            });
+            $(document).on('click', '.remove-row', function () {
+                table.row($(this).closest('tr')).remove().draw();
+                recalculateTotals();
+            });
+            $(document).on('click', '.add-product', function (event) {
+                event.preventDefault();
+                var id = $(this).closest('tr').find('input[name^="ProductInvoice.Items"]').val();
+                myfunction2(id);
+            });
+             $(document).on('input', '.quantity-input', '.discount-input', function () {
+                recalculateTotals();
+            });
+            $(document).on('input','.discount-input', function () {
+                recalculateTotals();
+            });
+            
+        });
+        
+
+        function openPopup() {
+            const popup = document.getElementById("popup-container");
+            const popupImage = document.getElementById("popup-image");
+            popup.style.display = "block";
+        }
+
+        function closePopup() {
+            const popup = document.getElementById("popup-container");
+            popup.style.display = "none";
+        }
+        function recalculateTotals() {
+            var subTotal = 0;
+            var Tax = parseFloat($("#tax").val());
+            
+            
+            $('.dtrg-group').each(function () {
+                var quantity = $(this).find('.quantity-input').val();
+                var unitPrice = $(this).find('.unitPrice-input').val();
+                var discount = $(this).find('.discount-input').val();
+                var total = (unitPrice - (unitPrice*discount)/100)*quantity;
+                $(this).find('.total-input').val(total.toFixed(2));
+                subTotal += total;
+            });
+
+            // Update the subtotal
+            $('#subtotal').val(subTotal.toFixed(2));
+            $('#total').val((subTotal + Tax).toFixed(2));
+        }
+           
+    </script>
+}
+
 
 <div>
     <a asp-action="Index">Back to List</a>

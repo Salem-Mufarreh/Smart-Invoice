@@ -30,5 +30,6 @@ namespace Smart_Invoice.Data
         public DbSet<InvoiceItem> InvoiceItem { get; set; }
         public DbSet<RegisteredCompany> RegisteredCompanies { get; set; }
         public DbSet<SalesInvoice> salesInvoices { get; set; }
+        public DbSet<GinvoiceProp> ginvoices { get; set; }
     }
 }

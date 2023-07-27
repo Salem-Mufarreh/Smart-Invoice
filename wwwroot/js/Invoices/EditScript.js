@@ -1,8 +1,8 @@
 ﻿
-var tableIndex = 2 + ItemNumber;
-function myfunction2(company) {
+var tableIndex = 2 ;
+function myfunction2(productName) {
     $.ajax({
-        url: "/Accountant/Products/AddProductPopup?itemId=" + encodeURIComponent(company),
+        url: "/Accountant/Products/AddProductPopup?itemId=" + encodeURIComponent(productName),
         type: "GET",
         success: function (data) {
             if (data != null) {

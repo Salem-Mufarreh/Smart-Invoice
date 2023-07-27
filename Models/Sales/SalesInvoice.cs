@@ -11,10 +11,10 @@ namespace Smart_Invoice.Models.Sales
         public int Id { get; set; }
 
         public Customer? Customer { get; set; }
-        public string Invoice_number { get; set; }
+        public string? Invoice_number { get; set; }
         public DateTime IssueDate { get; set; }
         public DateTime DueDate { get; set; }
-        public List<Product>? Products { get; set; }
+        public List<GinvoiceProp>? Products { get; set; }
         public double Discount { get; set; }
         public double SubTotal { get; set; }
         public double Tax { get; set; }

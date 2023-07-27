@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Invoice.Data;
 
@@ -11,9 +12,10 @@ using Smart_Invoice.Data;
 namespace Smart_Invoice.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230711104539_switching products in sales")]
+    partial class switchingproductsinsales
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -433,6 +435,9 @@ namespace Smart_Invoice.Data.Migrations
                         .IsRequired()
                         .HasColumnType("int");
 
+                    b.Property<int?>("SalesInvoiceId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Total")
                         .HasColumnType("float");
 
@@ -448,6 +453,8 @@ namespace Smart_Invoice.Data.Migrations
                     b.HasKey("InvoiceItemId");
 
                     b.HasIndex("ProductInvoiceId");
+
+                    b.HasIndex("SalesInvoiceId");
 
                     b.HasIndex("productId");
 
@@ -549,47 +556,6 @@ namespace Smart_Invoice.Data.Migrations
                     b.HasKey("CompanyCode");
 
                     b.ToTable("RegisteredCompanies");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Sales.GinvoiceProp", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<double>("Discount")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SalesInvoiceId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Total")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Unit")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("UnitPrice")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("productId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SalesInvoiceId");
-
-                    b.HasIndex("productId");
-
-                    b.ToTable("ginvoices");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Sales.SalesInvoice", b =>
@@ -881,6 +847,10 @@ namespace Smart_Invoice.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Smart_Invoice.Models.Sales.SalesInvoice", null)
+                        .WithMany("Products")
+                        .HasForeignKey("SalesInvoiceId");
+
                     b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
                         .WithMany()
                         .HasForeignKey("productId");
@@ -897,19 +867,6 @@ namespace Smart_Invoice.Data.Migrations
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Smart_Invoice.Models.Sales.GinvoiceProp", b =>
-                {
-                    b.HasOne("Smart_Invoice.Models.Sales.SalesInvoice", null)
-                        .WithMany("Products")
-                        .HasForeignKey("SalesInvoiceId");
-
-                    b.HasOne("Smart_Invoice.Models.Products.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("productId");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Sales.SalesInvoice", b =>
@@ -966,11 +923,13 @@ namespace Smart_Invoice.Data.Migrations
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.Product_Invoice", b =>
                 {
-                    b.HasOne("Smart_Invoice.Models.Invoices.Invoice", null)
-                        .WithOne()
-                        .HasForeignKey("Smart_Invoice.Models.Invoices.Product_Invoice", "Id")
+                    b.HasOne("Smart_Invoice.Models.Invoices.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
+
+                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("Smart_Invoice.Models.Invoices.UtilityInvoice", b =>
