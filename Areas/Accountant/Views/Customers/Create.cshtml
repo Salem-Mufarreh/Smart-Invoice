@@ -11,24 +11,15 @@
 <h4>Customer</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+    <form asp-action="Create" class="row">
+        <div class="col-md-4">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="CustomerName" class="control-label"></label>
+                <label asp-for="CustomerName" class="control-label">Customer Name</label>
                 <input asp-for="CustomerName" class="form-control" />
                 <span asp-validation-for="CustomerName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Customer_Name_Normilized" class="control-label"></label>
-                <input asp-for="Customer_Name_Normilized" class="form-control" />
-                <span asp-validation-for="Customer_Name_Normilized" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Customer_Name_English" class="control-label"></label>
-                <input asp-for="Customer_Name_English" class="form-control" />
-                <span asp-validation-for="Customer_Name_English" class="text-danger"></span>
-            </div>
+           
             <div class="form-group">
                 <label asp-for="Address" class="control-label"></label>
                 <input asp-for="Address" class="form-control" />
@@ -49,6 +40,8 @@
                 <input asp-for="ZipCode" class="form-control" />
                 <span asp-validation-for="ZipCode" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-4">
             <div class="form-group">
                 <label asp-for="Country" class="control-label"></label>
                 <input asp-for="Country" class="form-control" />
@@ -65,20 +58,22 @@
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Store_Tax_Number" class="control-label"></label>
+                <label asp-for="Store_Tax_Number" class="control-label">Store Tax Number</label>
                 <input asp-for="Store_Tax_Number" class="form-control" />
                 <span asp-validation-for="Store_Tax_Number" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="customer_number" class="control-label"></label>
-                <input asp-for="customer_number" class="form-control" />
-                <span asp-validation-for="customer_number" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+           
+            
+        </div>
+        <br />
+        <div class="row">
+         
+            <div class="form-group m-2">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
+ 
 </div>
 
 <div>

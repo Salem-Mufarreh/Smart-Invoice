@@ -75,12 +75,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public IActionResult Create()
         {
             SalesInvoice invoice = new SalesInvoice();
-            invoice.Invoice_number = "23/00002569";
+            invoice.Invoice_number = "23/00002585";
             invoice.Customer = new Models.Customer();
-            invoice.Notes = "";
             invoice.Products = new List<GinvoiceProp>();
             invoice.IssueDate = DateTime.Today;
-            invoice.DueDate = DateTime.Now;
+            invoice.DueDate = DateTime.Now.AddMonths(1);
             invoice.Notes = "Thank you for your business. We appreciate your prompt payment.";
             return View(invoice);
         }
@@ -200,6 +199,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             if (salesInvoice != null)
             {
                 _context.salesInvoices.Remove(salesInvoice);
+                _context.ginvoices.RemoveRange(_context.ginvoices.Where(g => g.SalesInvoiceId.Equals(id)));
             }
             
             await _context.SaveChangesAsync();
@@ -257,6 +257,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             customerDetailsTable.AddCell(CreateCell(salesInvoice.Customer.CustomerName, regularFont, TextAlignment.LEFT));
             customerDetailsTable.AddCell(CreateCell("Address:", boldFont, TextAlignment.LEFT));
             customerDetailsTable.AddCell(CreateCell(salesInvoice.Customer.Address, regularFont, TextAlignment.LEFT));
+            customerDetailsTable.AddCell(CreateCell("Registered Tax Number:", boldFont, TextAlignment.LEFT));
+            customerDetailsTable.AddCell(CreateCell(salesInvoice.Customer.Store_Tax_Number, regularFont, TextAlignment.LEFT));
 
             document.Add(customerDetailsTable);
 

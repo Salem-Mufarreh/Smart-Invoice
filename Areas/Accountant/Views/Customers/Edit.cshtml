@@ -8,27 +8,19 @@
 
 <h1>Edit</h1>
 
-<h4>Customer</h4>
+
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
+<div class="row card" style="display:flex">
+    <div class="card-header"><h4>Customer</h4></div>
+     <form asp-action="Edit" class="row">
+        <div class="col-md-6">
+       
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="CustomerId" />
             <div class="form-group">
-                <label asp-for="CustomerName" class="control-label"></label>
+                <label asp-for="CustomerName" class="control-label">Customer Name</label>
                 <input asp-for="CustomerName" class="form-control" />
                 <span asp-validation-for="CustomerName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Customer_Name_Normilized" class="control-label"></label>
-                <input asp-for="Customer_Name_Normilized" class="form-control" />
-                <span asp-validation-for="Customer_Name_Normilized" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Customer_Name_English" class="control-label"></label>
-                <input asp-for="Customer_Name_English" class="form-control" />
-                <span asp-validation-for="Customer_Name_English" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Address" class="control-label"></label>
@@ -45,6 +37,8 @@
                 <input asp-for="State" class="form-control" />
                 <span asp-validation-for="State" class="text-danger"></span>
             </div>
+        </div>
+        <div class="col-md-6">
             <div class="form-group">
                 <label asp-for="ZipCode" class="control-label"></label>
                 <input asp-for="ZipCode" class="form-control" />
@@ -55,6 +49,7 @@
                 <input asp-for="Country" class="form-control" />
                 <span asp-validation-for="Country" class="text-danger"></span>
             </div>
+        
             <div class="form-group">
                 <label asp-for="Phone" class="control-label"></label>
                 <input asp-for="Phone" class="form-control" />
@@ -70,16 +65,13 @@
                 <input asp-for="Store_Tax_Number" class="form-control" />
                 <span asp-validation-for="Store_Tax_Number" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="customer_number" class="control-label"></label>
-                <input asp-for="customer_number" class="form-control" />
-                <span asp-validation-for="customer_number" class="text-danger"></span>
-            </div>
+           
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
-        </form>
-    </div>
+        
+        </div>
+    </form>
 </div>
 
 <div>

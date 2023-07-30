@@ -11,80 +11,40 @@
 <div>
     <h4>Customer</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CustomerName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CustomerName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer_Name_Normilized)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Customer_Name_Normilized)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer_Name_English)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Customer_Name_English)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.City)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.City)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.State)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.State)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ZipCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ZipCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Country)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Country)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Store_Tax_Number)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Store_Tax_Number)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.customer_number)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.customer_number)
-        </dd>
-    </dl>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-6 w-100 h-100">
+                <div class="card-header">
+                    Warehouse information
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Customer Name</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.CustomerName)</dd>
+                        <dt class="col-sm-4">Address</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Address)</dd>
+                        <dt class="col-sm-4">City</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.City)</dd>
+                        <dt class="col-sm-4">State</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.State)</dd>
+                        <dt class="col-sm-4">Zip Code</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ZipCode)</dd>
+                        <dt class="col-sm-4">Country</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Country)</dd>
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Phone)</dd>
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+                        <dt class="col-sm-4">Tax Number</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Store_Tax_Number)</dd>
+
+                    </dl>
+         
+                </div>
+            </div>
+        </div>
+    </div>
+   
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.CustomerId">Edit</a> |

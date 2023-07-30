@@ -24,6 +24,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Inventories.Include(i => i.Warehouse);
+            
             return View(await applicationDbContext.ToListAsync());
         }
 

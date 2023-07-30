@@ -19,10 +19,15 @@
             <span asp-validation-for="Customer.CustomerId" class="text-danger"></span>
         </div>
 
-         <div class="form-group">
+        <div class="form-group">
             <label asp-for="Customer.Address" class="control-label">Billing address</label>
             <input asp-for="Customer.Address" class="form-control address-input" />
             <span asp-validation-for="Customer.Address" class="text-danger"></span>
+        </div>
+         <div class="form-group">
+            <label asp-for="Customer.Store_Tax_Number" class="control-label">Store Tax Number</label>
+            <input asp-for="Customer.Store_Tax_Number" class="form-control TaxNumber-input" />
+            <span asp-validation-for="Customer.Store_Tax_Number" class="text-danger"></span>
         </div>
     </div>
     <div class="col-md-4">
@@ -72,10 +77,10 @@
                 <tr class="dtrg-group">
                     <td><input type="text" class="form-control prductId-input" name="Products[0].productId" /></td>
                     <td><select class="form-select  product_dropdown" name="Products[0].Name" /></td>
-                    <td><input type="text" class="form-control unit-input" name="Products[0].Unit" /></td>
+                    <td><input type="text" class="form-control unit-input" name="Products[0].Unit" value="pcs" /></td>
                     <td><input type="text" class="form-control unitPrice-input" name="Products[0].UnitPrice" /></td>
                     <td><input type="text" class="form-control quantity-input" name="Products[0].Quantity" /></td>
-                    <td><input type="text" class="form-control discount-input" name="Products[0].Discount" /></td>
+                    <td><input type="text" class="form-control discount-input" name="Products[0].Discount" value="0" /></td>
                     <td><input placeholder="0.00" class="form-control total-input" name="Products[0].Total" readonly /></td>
                     <td><button class="btn btn-danger remove-row">Remove</button></td>
 
@@ -106,8 +111,8 @@
             </div>
             <span asp-validation-for="SubTotal" class="text-danger"></span>
             <div class="form-group d-flex" style="justify-content:space-between">
-                <label asp-for="Tax" class="control-label"></label>
-                <input asp-for="Tax" class="form-control" style="background-color:transparent" readonly/>
+                <label asp-for="Tax" class="control-label"> VAT (Included)</label>
+                <input asp-for="Tax" class="form-control" style="background-color:transparent" />
             </div>
                             <span asp-validation-for="Tax" class="text-danger"></span>
 
@@ -162,10 +167,10 @@
                 var rowNode = table.row.add([
                     '<input type="text" class="form-control prductId-input" name="Products['+i+'].productId" />',
                     '<select class="form-select product_dropdown" name="Products['+i+'].Name" ></select>',
-                    '<input type="text" class="form-control unit-input" name="Products['+i+'].Unit" />',
-                    '<input type="text" class="form-control unitPrice-input" name="Products['+i+'].UnitPrice"  />',
+                    '<input type="text" class="form-control unit-input" name="Products['+i+'].Unit" value="pcs" />',
+                    '<input type="text" class="form-control unitPrice-input" name="Products['+i+'].UnitPrice"   />',
                     '<input type="text" class="form-control quantity-input" name="Products['+i+'].Quantity" />',
-                    '<input type="text" class="form-control discount-input" name="Products['+i+'].Discount" />',
+                    '<input type="text" class="form-control discount-input" name="Products['+i+'].Discount" value="0" />',
                     '<input type="text" class="form-control total-input" name="Products['+i+'].Total" readonly />',
                     '<button class="btn btn-danger remove-row">Remove</button>'
                    
@@ -191,11 +196,16 @@
             $(document).on('input','.discount-input', function () {
                 recalculateTotals();
             });
+            $(document).on('input','#AmountPaid',function(){
+                recalculateTotals();
+            });
             $(document).on('input','#customerDropDown', function () {
                 var dropdown = $("#customerDropDown");
                 var address = $(".address-input");
+                var taxNumber = $(".TaxNumber");
                 var index = dropdown.val()
                 address.val(Customers[index-1].address);
+                $(".TaxNumber-input").val(Customers[index-1].store_Tax_Number);
             });
             
             $(document).on('change', '.product_dropdown', function () {
@@ -225,6 +235,7 @@
                 $('#subtotal').val(subTotal.toFixed(2));
                 $('#total').val(subTotal.toFixed(2));
                 $(".due-input").val((subTotal-paid).toFixed(2));
+                $("#Tax").val(subTotal.toFixed(2));
             }
                 var Customerdropdown = $("#customerDropDown");
             $.ajax({

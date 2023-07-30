@@ -28,9 +28,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CostPrice)
-            </th>
+           
             <th>
                 @Html.DisplayNameFor(model => model.CategoryId)
             </th>
@@ -40,9 +38,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.ImageUrl)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
+           
             <th>
                 @Html.DisplayNameFor(model => model.UpdatedDate)
             </th>
@@ -67,9 +63,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CostPrice)
-            </td>
+           
             <td>
                 @Html.DisplayFor(modelItem => item.CategoryId)
             </td>
@@ -79,9 +73,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.ImageUrl)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
+            
             <td>
                 @Html.DisplayFor(modelItem => item.UpdatedDate)
             </td>
@@ -92,7 +84,6 @@
                 @Html.DisplayFor(modelItem => item.IsActive)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ProductId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.ProductId">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.ProductId">Delete</a>
             </td>
