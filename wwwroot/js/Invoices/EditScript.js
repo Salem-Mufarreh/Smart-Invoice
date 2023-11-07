@@ -17,6 +17,7 @@ function myfunction2(productName) {
 
 var form = document.getElementById("EditForm");
 form.addEventListener('submit', function (event) {
+    var form = $(event.target).closest("#CreateProductPartial");
     if (!form.checkValidity()) {
         event.preventDefault()
         event.stopPropagation()
@@ -74,9 +75,9 @@ document.addEventListener('submit', function (event) {
     }
 });
 
-document.addEventListener('submit', function (event) {
-    var form = event.target.closest("#CreateProductPartial");
-    if (form) {
+$(document).on('submit', function (event) {
+    var form = $(event.target).closest("#CreateProductPartial");
+    if (form[0]) {
         if (!form.checkValidity()) {
             event.preventDefault()
             event.stopPropagation()

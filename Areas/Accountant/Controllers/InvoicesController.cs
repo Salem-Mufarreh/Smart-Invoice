@@ -421,6 +421,8 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
 
                 _logger.LogInformation(User.Identity.Name + "Has Submited a new Document ");
                 HttpContext.Session.Remove("Product");
+                var Error = new Toastr(SD.ToastSuccess, "Invoice Was Submitted !");
+                TempData["Toastr"] = JsonConvert.SerializeObject(Error);
                 return RedirectToAction(nameof(Index));
                 //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }

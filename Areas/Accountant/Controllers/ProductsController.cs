@@ -212,6 +212,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [HttpGet]
         public async Task<IActionResult> AddProductPopup(string itemId)
         {
+            ViewData["Category"] = new SelectList(_context.Categories.ToList(), "CategoryId", "CategoryName");
             InvoiceViewModel model = JsonConvert.DeserializeObject<InvoiceViewModel>(HttpContext.Session.GetString("ViewModel"));
             if (model != null)
             {
