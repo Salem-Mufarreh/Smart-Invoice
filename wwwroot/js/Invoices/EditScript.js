@@ -1,8 +1,8 @@
 ﻿
-var tableIndex = 2 + ItemNumber;
-function myfunction2(company) {
+var tableIndex = 2 ;
+function myfunction2(productName) {
     $.ajax({
-        url: "/Accountant/Products/AddProductPopup?itemId=" + encodeURIComponent(company),
+        url: "/Accountant/Products/AddProductPopup?itemId=" + encodeURIComponent(productName),
         type: "GET",
         success: function (data) {
             if (data != null) {
@@ -17,6 +17,7 @@ function myfunction2(company) {
 
 var form = document.getElementById("EditForm");
 form.addEventListener('submit', function (event) {
+    var form = $(event.target).closest("#CreateProductPartial");
     if (!form.checkValidity()) {
         event.preventDefault()
         event.stopPropagation()
@@ -74,9 +75,9 @@ document.addEventListener('submit', function (event) {
     }
 });
 
-document.addEventListener('submit', function (event) {
-    var form = event.target.closest("#CreateProductPartial");
-    if (form) {
+$(document).on('submit', function (event) {
+    var form = $(event.target).closest("#CreateProductPartial");
+    if (form[0]) {
         if (!form.checkValidity()) {
             event.preventDefault()
             event.stopPropagation()

@@ -21,8 +21,8 @@ namespace Smart_Invoice.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            
-            /*var client = _httpClientFactory.CreateClient();
+
+            var client = _httpClientFactory.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "https://api.apilayer.com/exchangerates_data/convert?to=ILS&from=USD&amount=100");
             request.Headers.Add("apikey", _exchangeAuth);
             var response = await client.SendAsync(request);
@@ -30,9 +30,9 @@ namespace Smart_Invoice.Areas.Admin.Controllers
             var responseStream = await response.Content.ReadAsStringAsync();
             var responseObject = JsonSerializer.Deserialize<JsonElement>(responseStream);
             var rate = responseObject.GetProperty("info").GetProperty("rate").GetDouble();
-            */
+
             ExchangeRateAPi rateOBJ = new ExchangeRateAPi();
-            rateOBJ.rate = 3.63628;
+            rateOBJ.rate = rate;
             rateOBJ.BaseUSD = "USD";
             rateOBJ.date = DateTime.Now;
             return View(rateOBJ);

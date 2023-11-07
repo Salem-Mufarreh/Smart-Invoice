@@ -9,10 +9,8 @@ namespace Smart_Invoice.Models.Invoices
     {
         [Key]
         public int Id { get; set; }
-        public virtual ICollection<InvoiceItem>? Items { get; set; }
+        public virtual List<InvoiceItem>? Items { get; set; }
 
-        // Add a foreign key to the Invoice model
-        [ForeignKey("Id")]
-        public virtual Invoice Invoice { get; set; }
+       
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Cloud.Vision.V1;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -54,11 +55,20 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 Product product = JsonConvert.DeserializeObject<Product>(HttpContext.Session.GetString("Product"));
                 HttpContext.Session.Remove("Product");
-               
+                
                 
                     return View(product);
 
                 
+            }
+            else
+            {
+                Product product = new Product();
+                product.UpdatedDate = DateTime.Now;
+                product.CreatedDate = DateTime.Now;
+                product.IsActive = true;
+                product.IsAvailable = true;
+                return View(product);
             }
             return View();
         }
@@ -202,16 +212,30 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         [HttpGet]
         public async Task<IActionResult> AddProductPopup(string itemId)
         {
-            // Retrieve the necessary data for the popup, such as existing products, etc.
-            var jsonResult = HttpContext.Session.GetString("Product");
-            List<Product> product = JsonConvert.DeserializeObject<List<Product>>(jsonResult);
-            try
+            ViewData["Category"] = new SelectList(_context.Categories.ToList(), "CategoryId", "CategoryName");
+            InvoiceViewModel model = JsonConvert.DeserializeObject<InvoiceViewModel>(HttpContext.Session.GetString("ViewModel"));
+            if (model != null)
             {
-                ViewData["Category"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
+                Product_Invoice invoice = model.ProductInvoice;
+                if (invoice != null)
+                {
+                    InvoiceItem item = invoice.Items.Where(i => i.Name.ToLower().Equals(itemId.ToLower())).FirstOrDefault();
+                    Product product = new Product();
+                    product.Name = item.Name;
+                    product.CostPrice = item.UnitPrice;
+                    product.Price = product.CostPrice + (item.UnitPrice * 0.16);
+                    return PartialView("_CreateProduct",product );
+
+                }
+                else
+                {
+                    return Problem();
+                }
             }
-            catch (Exception ex) { 
+            else
+            {
+                return Problem();
             }
-            return PartialView("_CreateProduct",product.Where(p=> p.Name.Equals(itemId)).FirstOrDefault());
         }
         [HttpPost]
         public async Task<IActionResult> SubmitProduct([FromBody] Product product)
@@ -289,6 +313,13 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     return BadRequest();
                 }
             }
+        }
+
+        [HttpGet]
+        public JsonResult GetAllProducts()
+        {
+            List<Product> products = _context.Products.ToList();
+            return Json(products);
         }
        
         #endregion

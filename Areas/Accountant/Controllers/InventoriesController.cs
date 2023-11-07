@@ -24,6 +24,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Inventories.Include(i => i.Warehouse);
+            
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -78,7 +79,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                 return NotFound();
             }
 
-            var inventory = await _context.Inventories.FindAsync(id);
+            var inventory = _context.Inventories.Where(i=> i.InventoryId.Equals(id)).Include(i => i.Warehouse).FirstOrDefault();
             if (inventory == null)
             {
                 return NotFound();

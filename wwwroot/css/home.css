@@ -1,0 +1,285 @@
+﻿
+.welcome {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape11.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .welcome .content {
+        max-width: 50rem;
+        margin-left: 35%;
+    }
+
+        .welcome .content h1 {
+            color: black;
+            font-size: 6rem;
+            text-align: center;
+        }
+
+        .welcome .content h2 {
+            color: #19b9dd;
+            font-size: 3.5rem;
+            text-align: center;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+
+        .welcome .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: center;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+
+.action_btn2 {
+    display: inline-block;
+    margin-top: 1rem;
+    border-radius: 5rem;
+    background: #ff6a00;
+    color: white;
+    padding: 1.3rem 7rem;
+    cursor: pointer;
+    font-size: 3rem;
+    margin-left: 30%;
+}
+
+    .action_btn2:hover {
+        scale: 1.1;
+        color: white;
+    }
+
+/*text2*/
+.text2 {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape22.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text2 .content {
+        max-width: 50rem;
+    }
+
+        .text2 .content h3 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: center;
+        }
+
+        .text2 .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: left;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+/*text3*/
+.text3 {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape33.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text3 .content {
+        max-width: 50rem;
+        margin-left: 60%;
+    }
+
+        .text3 .content h4 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: justify-all;
+        }
+
+        .text3 .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: left;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+/*text4*/
+.text4 {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape44.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text4 .content {
+        max-width: 50rem;
+    }
+
+        .text4 .content h5 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: center;
+        }
+
+        .text4 .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: left;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+/*text5*/
+.text5 {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape55.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text5 .content {
+        max-width: 50rem;
+        margin-left: 60%;
+    }
+
+        .text5 .content h6 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: center;
+        }
+
+        .text5 .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: left;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+/*text6*/
+.text6 {
+    display: flex;
+    align-items: start;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape66.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text6 .content {
+        max-width: 50rem;
+        margin-left: 35%;
+        margin-top: 15%;
+    }
+
+        .text6 .content h7 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: center;
+        }
+
+        .text6 .content p {
+            color: black;
+            font-size: 2.1rem;
+            text-align: center;
+            padding: 1rem 0;
+            line-height: 1.5;
+        }
+/*text7*/
+.text7 {
+    display: flex;
+    align-items: start;
+    min-height: 100vh;
+    background: url('../Backgrounds/shape7.png')no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+    .text7 .content {
+        max-width: 50rem;
+        margin-left: 35%;
+        margin-top: 8%;
+    }
+
+        .text7 .content h8 {
+            color: #ff6a00;
+            font-size: 5rem;
+            text-align: center;
+        }
+
+footer {
+    background: #021931;
+    min-height: 5vh;
+    text-align: right;
+    margin-right: 0px;
+    margin-top: 50px;
+    color: white;
+    font-size: 12px;
+}
+/*responsive design*/
+@media (max-width: 992px) {
+    html {
+        font-size: 55%;
+    }
+
+    header {
+        padding: 2rem;
+    }
+
+    section {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header .fa-bars {
+        display: block;
+    }
+
+    header .navbar .links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+
+        header .navbar .links a {
+            margin: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            display: block;
+        }
+
+    header #toggler:checked ~ .navbar .links {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    }
+
+    .welcome .content h1 {
+        font-size: 5rem;
+    }
+
+    .welcome .content h2 {
+        font-size: 2.5rem;
+    }
+
+    .text2 .content h3 {
+        font-size: 5rem;
+    }
+
+    .text2 .content p {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 450px) {
+    html {
+        font-size: 50%;
+    }

@@ -25,5 +25,9 @@ namespace Smart_Invoice.Models.Products
        // Navigation property
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
+
+        [ForeignKey(name: "SalesInvoiceId")]
+        [Column("SalesInvoiceId")]
+        public int? SalesInvoiceId { get; set; }
     }
 }

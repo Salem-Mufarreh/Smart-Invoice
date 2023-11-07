@@ -1,0 +1,55 @@
+﻿@model IEnumerable<Smart_Invoice.Models.Registered_Companies.RegisteredCompany>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CompanyName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CompanyPhone)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CompanyAddress)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GovCompanyRegistration)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyPhone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyAddress)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GovCompanyRegistration)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.CompanyCode">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.CompanyCode">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.CompanyCode">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

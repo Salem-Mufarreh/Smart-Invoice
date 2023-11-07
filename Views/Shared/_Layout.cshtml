@@ -30,64 +30,59 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                       
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sales
+                            </a>
+                             <ul class="dropdown-menu dropdown-menu-dark">
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="SalesInvoices">New Invoice</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="SalesInvoices">List Invoices</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Customers">New Customer</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Customers">List Customers</a></li>
+
+
+                             </ul>
+                            
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Invoices
+                            Inventory Management
+                            </a>
+                             <ul class="dropdown-menu dropdown-menu-dark">
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Warehouses">List Warehouses</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Warehouses">Add Warehouse</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Products">List Products</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Products">Add Product</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Inventories">Inventories</a></li>
+                                 <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Inventories">Add Inventory</a></li>
+
+                             </ul>
+                            
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
+                            Bills
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Invoices">List</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Invoices">Add Invoice</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Invoices">All Bills</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Invoices">Add a Bill</a></li>
                             </ul>
                         </li>
                        
                         <li class="nav-item dropdown">
                             <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Companies
+                            Suppliers Management
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Companies">Company</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Companies">Add new Company</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Companies">Suppliers</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Companies">Add new Supplier</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="ContactPersons">Add Contact Personal</a></li>
+                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="ContactPersons">List Contact Personal</a></li>
+
                             </ul>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Contact Person
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="ContactPersons">List Point of Contact</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="ContactPersons">Add company Representative</a></li>
-                            </ul>
-                        </li>
-                         <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Warehouse
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Warehouses">List Warehouse</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Warehouses">Add Warehouse</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Products
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Products">List Products</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Products">Add Products</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">
-                            Inventories
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Index" asp-controller="Inventories">Inventories</a></li>
-                            <li><a class="dropdown-item" asp-area="Accountant" asp-action="Create" asp-controller="Inventories">Add Inventory</a></li>
-                            </ul>
-                        </li>
+                        
                         
                         <li class="nav-item dropdown">
                             <a class="nav-link text-dark dropdown-toggle table-hover" data-bs-toggle="dropdown" aria-expanded="false">

@@ -47,6 +47,7 @@ namespace Smart_Invoice.Models.Invoices
         [ForeignKey("CompanyCode")]
         public long? CompanyCode { get; set; }
         public virtual RegisteredCompany? RegisteredCompany { get; set; }
-
+        [Column("Currancy_Code")]
+        public string ? CurrancyCode { get; set; }
     }
 }

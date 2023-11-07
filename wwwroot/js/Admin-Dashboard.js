@@ -130,11 +130,11 @@ chart.render();
 var tracking = {
     series: [
         {
-            name: "High - 2023",
+            name: "2023",
             data: [28, 29, 33, 36, 32, 32, 33]
         },
         {
-            name: "Low - 2022",
+            name: "2022",
             data: [12, 11, 14, 18, 17, 13, 13]
         }
     ],
@@ -161,7 +161,7 @@ var tracking = {
         curve: 'smooth'
     },
     title: {
-        text: 'Average High & Low Temperature',
+        text: 'Average Sales for Years',
         align: 'left'
     },
     grid: {
@@ -182,7 +182,7 @@ var tracking = {
     },
     yaxis: {
         title: {
-            text: 'Temperature'
+            text: 'Sales (Thousand)'
         },
         min: 5,
         max: 40

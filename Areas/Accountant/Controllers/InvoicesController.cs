@@ -5,7 +5,9 @@ using Google.Cloud.DocumentAI.V1;
 using Google.Cloud.Storage.V1;
 using Google.Cloud.Vision.V1;
 using Google.Protobuf;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
@@ -185,7 +187,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                         new JProperty("Tax", parsedJson["tax"]),
                         new JProperty("Total", parsedJson["total"]),
                         new JProperty("Items", parsedJson["items"]),
-                        new JProperty("Currency", parsedJson["currency"])
+                        new JProperty("CurrancyCode", parsedJson["currency"])
                     );
                     /* using (StreamReader reader = new StreamReader("./Test Files/Test3.json"))
                      {
@@ -196,6 +198,12 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     if (Sresponse.ToLower().Contains("items"))
                     {
                         viewModel.ProductInvoice = JsonConvert.DeserializeObject<Product_Invoice>(filteredJson.ToString(), _serializerSettings);
+                        var x = _context.Companies.Where(c => c.Company_Name_English.ToLower().Equals(viewModel.ProductInvoice.Company.Company_Name.ToLower())).FirstOrDefault();
+                        var y = _context.Companies.Where(c => c.Company_Name.ToLower().Equals(viewModel.ProductInvoice.Company.Company_Name.ToLower())).FirstOrDefault();
+                        if ((_context.Companies.Where(c => c.Company_Name_English.ToLower().Equals(viewModel.ProductInvoice.Company.Company_Name.ToLower()) || c.Company_Name.ToLower().Equals(viewModel.ProductInvoice.Company.Company_Name.ToLower())).FirstOrDefault()) == null)
+                        {
+                            ViewData["companyFound"] = "notFound";
+                        }
                         ViewData["Companies"] = new SelectList(SearchRelatedCompanies(viewModel.ProductInvoice.Company.Company_Name), "Company_Name", "Company_Name");
                         var invoiceID = _context.Invoices.FirstOrDefault(I => I.Invoice_Number.Equals(viewModel.ProductInvoice.Invoice_Number));
                         if (invoiceID != null)
@@ -292,9 +300,11 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(IFormCollection rawInvoice)
+        public async Task<IActionResult> Edit(InvoiceViewModel viewModel )
         {
-
+           
+            ModelState.Clear();
+            
             if (!ModelState.IsValid)
             {
                 //TODO: Add Toastr Notifications
@@ -310,7 +320,7 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
             {
                 //TODO: Edit the image so the signature of the user can be displayed on it 
                 // or make a new document as and attached the information with it 
-                if (rawInvoice.Keys.Contains("Meter_Number"))
+                /*if (rawInvoice.Keys.Contains("Meter_Number"))
                 {
                     UtilityInvoice invoice = new UtilityInvoice();
                     //This invoice is Utility Invoice
@@ -343,101 +353,76 @@ namespace Smart_Invoice.Areas.Accountant.Controllers
                     await _context.SaveChangesAsync();
 
                 }
-                else
+                */
+                if(viewModel.ProductInvoice != null)
                 {
-                    if (rawInvoice.Keys.Any(k => k.StartsWith("Product")) || rawInvoice.Keys.Any(k => k.StartsWith("UnitPrice")))
+                    var invoice = viewModel.ProductInvoice;
+                    invoice.Invoice_Type = SD.InvoiceProduct;
+                    invoice.Company = _context.Companies.Where(c => c.Company_Name.ToLower().Equals(invoice.Company.Company_Name.ToLower())).FirstOrDefault();
+                    invoice.Invoice_Id = Guid.NewGuid().ToString();
+                    invoice.CompanyID = invoice.Company;
+                    foreach(InvoiceItem item in invoice.Items)
                     {
-                        Product_Invoice invoice = new Product_Invoice();
-                        List<InvoiceItem> items = new List<InvoiceItem>();
-                        List<Inventory> inventories = new List<Inventory>();
-                        var i = 0;
-                        foreach (var item in rawInvoice.Keys)
+                        if(item.Product != null)
                         {
-                            var property = typeof(Product_Invoice).GetProperty(item);
-                            if (property != null)
+                            /* Item Was Already in the database */
+                            var itemInventory = _context.Inventories.Where(i => i.ProductId.Equals(item.Product.ProductId)).FirstOrDefault();
+                            if (itemInventory != null)
                             {
-                                var value = rawInvoice[item].ToString();
-                                if (property.Name.Contains("Tax") || property.Name.Contains("Total")
-                                    || property.Name.Contains("Subtotal"))
-                                {
-                                    property.SetValue(invoice, Double.Parse(value));
-                                }
-
-                                else
-                                {
-                                    property.SetValue(invoice, value.Normalize());
-                                }
-
+                                itemInventory.LastUpdated = DateTime.Now;
+                                itemInventory.PurchaseDate = DateTime.Now;
+                                itemInventory.ProductCount = itemInventory.ProductCount + (int)item.Quantity;
                             }
-                            else if (item.StartsWith("Product"))
+                            else
                             {
                                 Inventory inventory = new Inventory();
-
-                                InvoiceItem itemInvoice = new InvoiceItem();
-                                itemInvoice.Name = rawInvoice["Product_" + i];
-                                itemInvoice.Unit = rawInvoice["Unit_" + i];
-                                itemInvoice.UnitPrice = Double.Parse(rawInvoice["UnitPrice_" + i]);
-                                itemInvoice.Quantity = Int32.Parse(rawInvoice["Quantity_" + i]);
-                                itemInvoice.Total = Double.Parse(rawInvoice["Total_" + i]);
-                                itemInvoice.productId = _context.Products.Where(p => p.Name.Contains(itemInvoice.Name)).Select(p => p.ProductId).FirstOrDefault();
-                                if (itemInvoice.productId != null)
-                                {
-                                     inventory = _context.Inventories.Where(i => i.ProductId.Equals(itemInvoice.productId)).FirstOrDefault();
-                                    if (inventory != null)
-                                    {
-                                        inventory.ProductCount = (int)itemInvoice.Quantity;
-                                        inventory.PurchaseDate = DateTime.UtcNow;
-                                        inventory.LastUpdated = DateTime.UtcNow;
-                                        inventory.SKU = "as";
-                                        inventory.ProductId = (int)itemInvoice.productId;
-                                        inventory.SellingPrice = itemInvoice.Total + (itemInvoice.Total + 0.16);
-                                        Warehouse warehouse = _context.Warehouses.Find(1);
-                                        warehouse.AvailableSpace = warehouse.AvailableSpace - (int)itemInvoice.Quantity;
-                                        warehouse.OccupancyRate = warehouse.Capacity / warehouse.AvailableSpace;
-
-                                    }
-                                    else
-                                    {
-                                        inventory = new Inventory();
-                                        inventory.ProductCount = inventory.ProductCount + (int)itemInvoice.Quantity;
-                                        inventory.PurchaseDate = DateTime.UtcNow;
-                                        inventory.LastUpdated = DateTime.UtcNow;
-                                        inventory.ProductId = (int)itemInvoice.productId;
-                                        inventory.SKU = "as";
-                                        inventory.SellingPrice = itemInvoice.Total + (itemInvoice.Total + 0.16);
-                                        Warehouse warehouse = _context.Warehouses.Find(1);
-                                        warehouse.AvailableSpace = warehouse.AvailableSpace - (int)itemInvoice.Quantity;
-                                        warehouse.OccupancyRate = warehouse.Capacity / warehouse.AvailableSpace;
-                                    }
-                                }
-                                i++;
-                                items.Add(itemInvoice);
-                                inventories.Add(inventory);
+                                item.Product = _context.Products.Where(i => i.Name.Equals(item.Name)).FirstOrDefault();
+                                inventory.PurchaseDate = DateTime.Now;
+                                inventory.LastUpdated = inventory.PurchaseDate;
+                                inventory.ProductId = item.Product.ProductId;
+                                inventory.SKU = item.Product.SKU;
+                                inventory.WarehouseId = _context.Warehouses.FirstOrDefault().WarehouseId;
+                                inventory.SellingPrice = item.Product.Price;
+                                _context.Add(inventory);
                             }
+                            _context.SaveChangesAsync().Wait();
                         }
+                        else
+                        {
+                            Inventory inventory = new Inventory();
+                            item.Product = _context.Products.Where(i => i.Name.Equals(item.Name)).FirstOrDefault();
+                            var itemInventory = _context.Inventories.Where(i => i.ProductId.Equals(item.Product.ProductId)).FirstOrDefault();
+                            if (itemInventory != null)
+                            {
+                                itemInventory.LastUpdated = DateTime.Now;
+                                itemInventory.PurchaseDate = DateTime.Now;
+                                itemInventory.ProductCount = itemInventory.ProductCount + (int)item.Quantity;
+                            }
+                            else
+                            {
+                                inventory.PurchaseDate = DateTime.Now;
+                                inventory.LastUpdated = inventory.PurchaseDate;
+                                inventory.ProductId = item.Product.ProductId;
+                                inventory.SKU = item.Product.SKU;
+                                inventory.WarehouseId = _context.Warehouses.FirstOrDefault().WarehouseId;
+                                inventory.SellingPrice = item.Product.Price;
+                                inventory.ProductCount = (int)item.Quantity;
 
-                        var company = _context.Companies.Where(c => c.Company_Name.
-                                Contains(rawInvoice["Company.Company_Name"])).FirstOrDefault();
+                                _context.Add(inventory);
+                            }
+                            _context.SaveChangesAsync().Wait();
 
-                        invoice.Company = company;
-                        invoice.Items = items.ToArray();
-                        invoice.Invoice_Id = Guid.NewGuid().ToString();
-                        invoice.Invoice_Type = SD.InvoiceProduct;
-                        invoice.CompanyID = company;
-                        _context.ProductInvoices.Add(invoice);
-                        _context.Inventories.AddRange(inventories);
-                        HttpContext.Session.Remove("model");
-                        HttpContext.Session.Remove("image");
-                        HttpContext.Session.Remove("Product");
-                        HttpContext.Session.Remove("ViewModel");
-                        await _context.SaveChangesAsync();
-
+                        }
                     }
-                }
+                    _context.Add(invoice);
+                    _context.SaveChangesAsync().Wait();
 
+                }
 
                 _logger.LogInformation(User.Identity.Name + "Has Submited a new Document ");
                 HttpContext.Session.Remove("Product");
+                var Error = new Toastr(SD.ToastSuccess, "Invoice Was Submitted !");
+                TempData["Toastr"] = JsonConvert.SerializeObject(Error);
                 return RedirectToAction(nameof(Index));
                 //TODO: Process the information and might be a good idea to save the text and the user who changed it with the image 
             }

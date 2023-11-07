@@ -4,6 +4,7 @@ using Smart_Invoice.Models;
 using Smart_Invoice.Models.Invoices;
 using Smart_Invoice.Models.Products;
 using Smart_Invoice.Models.Registered_Companies;
+using Smart_Invoice.Models.Sales;
 using Smart_Invoice.Models.Stock;
 using Smart_Invoice.Models.Warehouse;
 
@@ -28,5 +29,7 @@ namespace Smart_Invoice.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<InvoiceItem> InvoiceItem { get; set; }
         public DbSet<RegisteredCompany> RegisteredCompanies { get; set; }
+        public DbSet<SalesInvoice> salesInvoices { get; set; }
+        public DbSet<GinvoiceProp> ginvoices { get; set; }
     }
 }

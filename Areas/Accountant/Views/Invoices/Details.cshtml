@@ -34,7 +34,7 @@
                 <dt class="col-sm-2">Company Address</dt>
                 <dd class="col-sm-6">@Html.DisplayFor(model=> model.ProductInvoice.Company.Address)</dd>
                 <dt class="col-sm-2">Invoice Currancy</dt>
-                <dd class="col-sm-2">USD</dd>
+                <dd class="col-sm-2">@Html.DisplayFor(model=> model.ProductInvoice.CurrancyCode)</dd>
                     </dl>
             }
             else if(Model.UtilityInvoice != null)

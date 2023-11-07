@@ -1,0 +1,118 @@
+﻿@model IEnumerable<Smart_Invoice.Models.Sales.SalesInvoice>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+
+@{
+    ViewData["Title"] = "Sales Invoices";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>All Sales Invoices</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-info text-white"> Create New Sale Invoice
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
+            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13zm.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0z"/>
+        </svg>
+    </a>
+</p>
+<table class="display" id="SalesInvoice">
+    <thead >
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Invoice_number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IssueDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DueDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Discount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubTotal)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Tax)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Total)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AmountPaid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BalanceDue)
+            </th>
+           
+            <th>Actions </th>
+        </tr>
+    </thead>
+    <tbody >
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Invoice_number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IssueDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DueDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Discount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubTotal)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tax)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Total)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AmountPaid)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BalanceDue)
+            </td>
+            
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+@section Scripts{
+    <script>
+
+        $(document).ready(function(){
+            var table = $('#SalesInvoice').DataTable();
+        });
+    </script>
+    @if (ViewData["PdfContent"] != null)
+    {
+        <script>
+            createPdf();
+        </script>
+    }
+
+    <script>
+        function createPdf(){
+            $.ajax({
+            url: '/Accountant/SalesInvoices/ReturnInvoice',
+            type: 'GET',
+            success: function(pdfContent) {
+                var win = window.open();
+                win.document.write('<embed width="100%" height="100%" src="data:application/pdf;base64,' + pdfContent + '" type="application/pdf" />');
+            }
+            });
+        }
+    </script>
+}
